@@ -670,6 +670,108 @@
             modal.style.display = 'none'; toggleEditMode(false); renderTable();
         });
         document.getElementById('btnCancelModal').addEventListener('click', () => { modal.style.display = 'none'; });
+        
+        // --- CHỨC NĂNG XUẤT FILE ---
+        // Lấy danh sách đang hiển thị (đã lọc theo tìm kiếm và sắp xếp)
+        function getFilteredAndSortedData() {
+            const query = searchInput.value.toLowerCase();
+            let filtered = customers.filter(c => 
+                c.customerId.toLowerCase().includes(query) ||
+                (c.companyName && c.companyName.toLowerCase().includes(query)) ||
+                (c.taxId && c.taxId.toLowerCase().includes(query)) ||
+                (c.contactName && c.contactName.toLowerCase().includes(query)) ||
+                (c.phone && c.phone.includes(query))
+            );
+            filtered.sort((a, b) => b.sales - a.sales);
+            return filtered;
+        }
+
+        // Xử lý Xuất Excel
+        btnExportExcel.addEventListener('click', function() {
+            const data = getFilteredAndSortedData();
+            if (data.length === 0) return;
+
+            const exportData = data.map((c, index) => ({
+                "STT": index + 1,
+                "Mã KH": c.customerId,
+                "MST": c.taxId || "",
+                "Tên Công ty": c.companyName || "",
+                "Người liên hệ": c.contactName || "",
+                "Số điện thoại": c.phone || "",
+                "Doanh số KH (VNĐ)": c.sales,
+                "Ghi chú": c.notes || ""
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Doanh_So_Khach_Hang");
+            XLSX.writeFile(wb, "Bang_Xep_Hang_Doanh_So.xlsx");
+        });
+
+        // Xử lý Xuất PDF
+        btnExportPDF.addEventListener('click', function() {
+            const data = getFilteredAndSortedData();
+            if (data.length === 0) return;
+
+            // Tạo một container ẩn để render giao diện bảng xuất ra PDF
+            const container = document.createElement('div');
+            container.style.padding = '20px';
+            container.style.fontFamily = 'Arial, sans-serif';
+            
+            const title = document.createElement('h2');
+            title.innerText = 'Bảng Xếp hạng Doanh số Khách hàng';
+            title.style.textAlign = 'center';
+            title.style.marginBottom = '20px';
+            title.style.color = '#2563eb';
+            container.appendChild(title);
+
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.fontSize = '12px';
+            
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: center; background-color: #f8fafc;">STT</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Mã KH</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">MST</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Tên Công ty</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Người LH</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">SĐT</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: right; background-color: #f8fafc;">Doanh số (VNĐ)</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            data.forEach((c, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">${index + 1}</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.customerId}</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.taxId || '-'}</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.companyName || '-'}</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.contactName || '-'}</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.phone || '-'}</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: right; color: #10b981; font-weight: bold;">${formatCurrency(c.sales)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+
+            const opt = {
+                margin:       10,
+                filename:     'Bang_Xep_Hang_Doanh_So.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(container).save();
+        });
+
         renderTable();
     </script>
 </body>
