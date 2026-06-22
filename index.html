@@ -376,10 +376,15 @@
 
     <!-- Script xử lý logic -->
     <script>
-        // Mảng chứa dữ liệu khách hàng
-        let customers = [];
+        // Mảng chứa dữ liệu khách hàng (Lấy từ Local Storage nếu có)
+        let customers = JSON.parse(localStorage.getItem('customers_data')) || [];
         let isEditing = false;
         let pendingCustomerData = null;
+
+        // Hàm lưu vào Local Storage
+        function saveData() {
+            localStorage.setItem('customers_data', JSON.stringify(customers));
+        }
 
         // Cấu hình phân trang
         let currentPage = 1;
@@ -585,6 +590,7 @@
             } else {
                 // Thêm mới
                 customers.push(data);
+                saveData(); // Lưu vào Local Storage
                 toggleEditMode(false); // Reset form
                 renderTable();
             }
@@ -596,6 +602,7 @@
             const index = customers.findIndex(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
             if (index !== -1) {
                 customers[index] = data;
+                saveData(); // Lưu vào Local Storage
                 toggleEditMode(false);
                 renderTable();
             }
@@ -617,6 +624,7 @@
             const index = customers.findIndex(c => c.customerId.toLowerCase() === pendingCustomerData.customerId.toLowerCase());
             if (index !== -1) {
                 customers[index] = pendingCustomerData;
+                saveData(); // Lưu vào Local Storage
             }
             modal.style.display = 'none';
             pendingCustomerData = null;
@@ -628,19 +636,6 @@
             modal.style.display = 'none';
             pendingCustomerData = null;
         });
-
-        // Tạo dữ liệu mẫu ban đầu (Dummy data) để bạn dễ kiểm tra phân trang
-        for(let i=1; i<=25; i++) {
-            customers.push({
-                customerId: `KH${i.toString().padStart(3, '0')}`,
-                taxId: `01234567${i}`,
-                companyName: `Công ty ${String.fromCharCode(64 + (i%26 || 26))} - Chi nhánh ${i}`,
-                contactName: `Nguyễn Văn ${i}`,
-                phone: `09000000${i.toString().padStart(2, '0')}`,
-                sales: Math.floor(Math.random() * 500000000) + 10000000,
-                notes: `Khách hàng tiềm năng số ${i}`
-            });
-        }
 
         // Hiển thị bảng ban đầu
         renderTable();
