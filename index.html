@@ -136,6 +136,21 @@
             background-color: #e2e8f0;
         }
 
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 12px;
+            width: auto;
+        }
+
         .edit-actions {
             display: none;
             gap: 10px;
@@ -272,7 +287,6 @@
     <div class="container">
         <header class="header">
             <h1>Quản lý Doanh số Khách hàng</h1>
-            <p>Nhập liệu và theo dõi khách hàng bằng HTML/JS cơ bản</p>
         </header>
 
         <div class="main-content">
@@ -322,6 +336,7 @@
                     
                     <div id="editActions" class="edit-actions">
                         <button type="button" id="btnCancelEdit" class="btn btn-secondary">Hủy</button>
+                        <button type="button" id="btnDelete" class="btn btn-danger" title="Xóa khách hàng này">Xóa</button>
                         <button type="button" id="btnUpdate" class="btn btn-primary">Cập nhật</button>
                     </div>
                 </form>
@@ -374,6 +389,18 @@
         </div>
     </div>
 
+    <!-- Modal xác nhận xóa KH -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: #ef4444; margin-bottom: 10px;">Xác nhận xóa</h3>
+            <p id="deleteModalMessage">Bạn có chắc chắn muốn xóa khách hàng này không? Dữ liệu không thể khôi phục.</p>
+            <div class="modal-actions">
+                <button type="button" id="btnCancelDelete" class="btn btn-secondary">Hủy</button>
+                <button type="button" id="btnConfirmDelete" class="btn btn-danger">Xóa Khách Hàng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script xử lý logic -->
     <script>
         // Mảng chứa dữ liệu khách hàng (Lấy từ Local Storage nếu có)
@@ -395,8 +422,17 @@
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
         const paginationContainer = document.getElementById('pagination');
+        
+        // Elements Modal Trùng lặp
         const modal = document.getElementById('duplicateModal');
         const modalMessage = document.getElementById('modalMessage');
+
+        // Elements Modal Xóa
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteModalMessage = document.getElementById('deleteModalMessage');
+        const btnCancelDelete = document.getElementById('btnCancelDelete');
+        const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+        let customerToDelete = null;
 
         // Elements form
         const idInput = document.getElementById('customerId');
@@ -411,6 +447,7 @@
         const editActions = document.getElementById('editActions');
         const btnCancelEdit = document.getElementById('btnCancelEdit');
         const btnUpdate = document.getElementById('btnUpdate');
+        const btnDelete = document.getElementById('btnDelete');
         const formTitle = document.getElementById('formTitle');
 
         // Hàm format tiền tệ
@@ -606,6 +643,32 @@
                 toggleEditMode(false);
                 renderTable();
             }
+        });
+
+        // Xử lý khi ấn nút Xóa bên trong Form
+        btnDelete.addEventListener('click', function() {
+            const currentId = idInput.value.trim();
+            customerToDelete = currentId;
+            deleteModalMessage.innerHTML = `Bạn có chắc chắn muốn xóa khách hàng <strong>"${currentId}"</strong> không? Dữ liệu không thể khôi phục.`;
+            deleteModal.style.display = 'flex';
+        });
+
+        // Xác nhận xóa trong Modal
+        btnConfirmDelete.addEventListener('click', function() {
+            if (customerToDelete) {
+                customers = customers.filter(c => c.customerId.toLowerCase() !== customerToDelete.toLowerCase());
+                saveData();
+                toggleEditMode(false);
+                renderTable();
+            }
+            deleteModal.style.display = 'none';
+            customerToDelete = null;
+        });
+
+        // Hủy xóa trong Modal
+        btnCancelDelete.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+            customerToDelete = null;
         });
 
         // Xử lý Hủy chỉnh sửa
