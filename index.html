@@ -195,6 +195,41 @@
             font-weight: bold;
         }
 
+        /* Phân trang (Pagination) Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-main);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(.active):not(:disabled) {
+            background: #f1f5f9;
+        }
+
+        .page-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         /* Modal Styles */
         .modal-overlay {
             display: none;
@@ -237,6 +272,7 @@
     <div class="container">
         <header class="header">
             <h1>Quản lý Doanh số Khách hàng</h1>
+            <p>Nhập liệu và theo dõi khách hàng bằng HTML/JS cơ bản</p>
         </header>
 
         <div class="main-content">
@@ -317,6 +353,11 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Thanh phân trang -->
+                <div id="pagination" class="pagination-container">
+                    <!-- Các nút phân trang sẽ được render vào đây -->
+                </div>
             </section>
         </div>
     </div>
@@ -340,10 +381,15 @@
         let isEditing = false;
         let pendingCustomerData = null;
 
+        // Cấu hình phân trang
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
         // Lấy các element trên DOM
         const form = document.getElementById('customerForm');
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
+        const paginationContainer = document.getElementById('pagination');
         const modal = document.getElementById('duplicateModal');
         const modalMessage = document.getElementById('modalMessage');
 
@@ -410,11 +456,57 @@
             }
         }
 
-        // Render bảng dữ liệu
+        // Render phân trang
+        function renderPagination(totalItems) {
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+            if (totalPages <= 1) return; // Không hiển thị phân trang nếu chỉ có 1 trang
+
+            // Nút "Trước"
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerText = 'Trước';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            };
+            paginationContainer.appendChild(prevBtn);
+
+            // Các nút số trang
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.innerText = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    renderTable();
+                };
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            // Nút "Sau"
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerText = 'Sau';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            };
+            paginationContainer.appendChild(nextBtn);
+        }
+
+        // Render bảng dữ liệu (Bao gồm sắp xếp và phân trang)
         function renderTable() {
             const query = searchInput.value.toLowerCase();
             
-            // Tìm kiếm
+            // Lọc dữ liệu theo tìm kiếm
             let filtered = customers.filter(c => 
                 c.customerId.toLowerCase().includes(query) ||
                 c.companyName.toLowerCase().includes(query) ||
@@ -423,18 +515,30 @@
                 c.phone.includes(query)
             );
 
-            // Sắp xếp doanh thu giảm dần
+            // LUÔN Sắp xếp doanh thu giảm dần (từ cao xuống thấp)
             filtered.sort((a, b) => b.sales - a.sales);
 
-            // Tạo HTML cho bảng
+            // Kiểm tra tổng số trang và điều chỉnh currentPage nếu bị vượt quá (VD: sau khi xóa/lọc)
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+
+            // Tính toán vị trí cắt mảng (Phân trang)
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = filtered.slice(startIndex, endIndex);
+
+            // Render dữ liệu ra HTML
             tableBody.innerHTML = '';
             
-            if (filtered.length === 0) {
+            if (paginatedItems.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #94a3b8; padding: 30px;">Không có dữ liệu.</td></tr>`;
+                paginationContainer.innerHTML = '';
                 return;
             }
 
-            filtered.forEach((customer, index) => {
+            paginatedItems.forEach((customer, index) => {
                 const tr = document.createElement('tr');
                 tr.title = "Click để chỉnh sửa";
                 // Khi click vào dòng thì đổ dữ liệu lên form
@@ -444,8 +548,11 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 };
 
+                // Số thứ tự hiển thị dựa theo trang hiện tại (tính từ toàn bộ danh sách)
+                const displayIndex = startIndex + index + 1;
+
                 tr.innerHTML = `
-                    <td class="text-center"><strong>${index + 1}</strong></td>
+                    <td class="text-center"><strong>${displayIndex}</strong></td>
                     <td style="color: var(--primary-color); font-weight: bold;">${customer.customerId}</td>
                     <td>${customer.taxId || '-'}</td>
                     <td><strong>${customer.companyName || '-'}</strong></td>
@@ -456,6 +563,9 @@
                 `;
                 tableBody.appendChild(tr);
             });
+
+            // Gọi render thanh phân trang
+            renderPagination(filtered.length);
         }
 
         // Xử lý khi ấn nút Lưu Thông Tin (Thêm mới)
@@ -496,8 +606,11 @@
             toggleEditMode(false);
         });
 
-        // Xử lý tìm kiếm
-        searchInput.addEventListener('input', renderTable);
+        // Xử lý tìm kiếm (Reset về trang 1 khi tìm kiếm mới)
+        searchInput.addEventListener('input', () => {
+            currentPage = 1;
+            renderTable();
+        });
 
         // Xử lý Modal (Xác nhận ghi đè dữ liệu trùng)
         document.getElementById('btnConfirmModal').addEventListener('click', function() {
@@ -516,7 +629,20 @@
             pendingCustomerData = null;
         });
 
-        // Hiển thị bảng rỗng ban đầu
+        // Tạo dữ liệu mẫu ban đầu (Dummy data) để bạn dễ kiểm tra phân trang
+        for(let i=1; i<=25; i++) {
+            customers.push({
+                customerId: `KH${i.toString().padStart(3, '0')}`,
+                taxId: `01234567${i}`,
+                companyName: `Công ty ${String.fromCharCode(64 + (i%26 || 26))} - Chi nhánh ${i}`,
+                contactName: `Nguyễn Văn ${i}`,
+                phone: `09000000${i.toString().padStart(2, '0')}`,
+                sales: Math.floor(Math.random() * 500000000) + 10000000,
+                notes: `Khách hàng tiềm năng số ${i}`
+            });
+        }
+
+        // Hiển thị bảng ban đầu
         renderTable();
     </script>
 </body>
