@@ -1,411 +1,347 @@
-import React, { useState, useMemo } from 'react';
-import { 
-    Users, 
-    FileText, 
-    Building2, 
-    Phone, 
-    Banknote, 
-    X, 
-    Check, 
-    Save, 
-    Trophy, 
-    AlertCircle,
-    Search
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Doanh số Khách hàng</title>
+    <!-- Nhúng Tailwind CSS để style giao diện -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Nhúng thư viện React -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Nhúng thư viện Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Nhúng thư viện FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="root"></div>
 
-export default function App() {
-    // State quản lý danh sách khách hàng
-    const [customers, setCustomers] = useState([]);
-    
-    // State quản lý tìm kiếm
-    const [searchQuery, setSearchQuery] = useState('');
-    
-    // State quản lý form nhập liệu
-    const initialFormState = {
-        customerId: '',
-        taxId: '',
-        companyName: '',
-        contactName: '',
-        phone: '',
-        sales: '',
-        notes: ''
-    };
-    const [formData, setFormData] = useState(initialFormState);
-    
-    // State quản lý Modal xác nhận trùng mã
-    const [showModal, setShowModal] = useState(false);
-    const [pendingCustomer, setPendingCustomer] = useState(null);
+    <script type="text/babel" data-presets="react,env">
+        const { useState, useMemo } = React;
 
-    // State quản lý chế độ chỉnh sửa
-    const [isEditing, setIsEditing] = useState(false);
+        function App() {
+            // State quản lý danh sách khách hàng
+            const [customers, setCustomers] = useState([]);
+            
+            // State quản lý tìm kiếm
+            const [searchQuery, setSearchQuery] = useState('');
+            
+            // State quản lý form nhập liệu
+            const initialFormState = {
+                customerId: '',
+                taxId: '',
+                companyName: '',
+                contactName: '',
+                phone: '',
+                sales: '',
+                notes: ''
+            };
+            const [formData, setFormData] = useState(initialFormState);
+            const [showModal, setShowModal] = useState(false);
+            const [pendingCustomer, setPendingCustomer] = useState(null);
+            const [isEditing, setIsEditing] = useState(false);
 
-    // Xử lý khi thay đổi dữ liệu trong form
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+            // Xử lý thay đổi input
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({ ...prev, [name]: value }));
+            };
 
-    // Xử lý khi bấm nút Lưu
-    const handleSave = (e) => {
-        e.preventDefault();
-        
-        if (!formData.customerId.trim()) return;
+            const handleSave = (e) => {
+                e.preventDefault();
+                if (!formData.customerId.trim()) return;
 
-        if (isEditing) {
-            setCustomers(prev => prev.map(c => 
-                c.customerId.toLowerCase() === formData.customerId.toLowerCase()
-                    ? { ...formData, sales: Number(formData.sales) || 0 }
-                    : c
-            ));
-            setIsEditing(false);
-            setFormData(initialFormState);
-            return;
-        }
+                if (isEditing) {
+                    setCustomers(prev => prev.map(c => 
+                        c.customerId.toLowerCase() === formData.customerId.toLowerCase()
+                            ? { ...formData, sales: Number(formData.sales) || 0 }
+                            : c
+                    ));
+                    setIsEditing(false);
+                    setFormData(initialFormState);
+                    return;
+                }
 
-        const existingCustomerIndex = customers.findIndex(
-            c => c.customerId.toLowerCase() === formData.customerId.toLowerCase()
-        );
+                const existingCustomerIndex = customers.findIndex(
+                    c => c.customerId.toLowerCase() === formData.customerId.toLowerCase()
+                );
 
-        if (existingCustomerIndex !== -1) {
-            setPendingCustomer(formData);
-            setShowModal(true);
-        } else {
-            setCustomers(prev => [...prev, { ...formData, sales: Number(formData.sales) || 0 }]);
-            setFormData(initialFormState);
-        }
-    };
+                if (existingCustomerIndex !== -1) {
+                    setPendingCustomer(formData);
+                    setShowModal(true);
+                } else {
+                    setCustomers(prev => [...prev, { ...formData, sales: Number(formData.sales) || 0 }]);
+                    setFormData(initialFormState);
+                }
+            };
 
-    const handleConfirmUpdate = () => {
-        setCustomers(prev => prev.map(c => 
-            c.customerId.toLowerCase() === pendingCustomer.customerId.toLowerCase()
-                ? { ...pendingCustomer, sales: Number(pendingCustomer.sales) || 0 }
-                : c
-        ));
-        setShowModal(false);
-        setPendingCustomer(null);
-        setFormData(initialFormState);
-    };
+            const handleConfirmUpdate = () => {
+                setCustomers(prev => prev.map(c => 
+                    c.customerId.toLowerCase() === pendingCustomer.customerId.toLowerCase()
+                        ? { ...pendingCustomer, sales: Number(pendingCustomer.sales) || 0 }
+                        : c
+                ));
+                setShowModal(false);
+                setPendingCustomer(null);
+                setFormData(initialFormState);
+            };
 
-    const handleCancelUpdate = () => {
-        setShowModal(false);
-        setPendingCustomer(null);
-    };
+            const handleCancelUpdate = () => {
+                setShowModal(false);
+                setPendingCustomer(null);
+            };
 
-    const handleRowClick = (customer) => {
-        setFormData(customer);
-        setIsEditing(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+            const handleRowClick = (customer) => {
+                setFormData(customer);
+                setIsEditing(true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
 
-    const cancelEdit = () => {
-        setFormData(initialFormState);
-        setIsEditing(false);
-    };
+            const cancelEdit = () => {
+                setFormData(initialFormState);
+                setIsEditing(false);
+            };
 
-    // Xử lý tìm kiếm và sắp xếp toàn bộ danh sách
-    const processedCustomers = useMemo(() => {
-        let result = [...customers];
-        
-        // 1. Lọc theo từ khóa tìm kiếm
-        if (searchQuery.trim() !== '') {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(c => 
-                c.customerId.toLowerCase().includes(query) ||
-                (c.companyName && c.companyName.toLowerCase().includes(query)) ||
-                (c.taxId && c.taxId.toLowerCase().includes(query)) ||
-                (c.contactName && c.contactName.toLowerCase().includes(query)) ||
-                (c.phone && c.phone.includes(query))
-            );
-        }
-        
-        // 2. Sắp xếp theo doanh số giảm dần (toàn bộ danh sách, đã bỏ slice)
-        return result.sort((a, b) => b.sales - a.sales);
-    }, [customers, searchQuery]);
+            const processedCustomers = useMemo(() => {
+                let result = [...customers];
+                
+                // Tìm kiếm
+                if (searchQuery.trim() !== '') {
+                    const query = searchQuery.toLowerCase();
+                    result = result.filter(c => 
+                        c.customerId.toLowerCase().includes(query) ||
+                        (c.companyName && c.companyName.toLowerCase().includes(query)) ||
+                        (c.taxId && c.taxId.toLowerCase().includes(query)) ||
+                        (c.contactName && c.contactName.toLowerCase().includes(query)) ||
+                        (c.phone && c.phone.includes(query))
+                    );
+                }
+                
+                // Sắp xếp doanh thu giảm dần (Hiển thị toàn bộ danh sách, không dùng slice nữa)
+                return result.sort((a, b) => b.sales - a.sales);
+            }, [customers, searchQuery]);
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(amount);
-    };
+            const formatCurrency = (amount) => {
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(amount);
+            };
 
-    return (
-        <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
-            <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header */}
-                <header className="flex items-center space-x-4 pb-6 border-b border-slate-200">
-                    <div className="bg-blue-600 p-3 rounded-xl flex items-center justify-center shadow-sm">
-                        <Users className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Quản lý Doanh số Khách hàng</h1>
-                        <p className="text-sm text-slate-500 mt-1">Nhập liệu và theo dõi top doanh số theo thời gian thực</p>
-                    </div>
-                </header>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {                    /* Cột trái: Form nhập liệu */}
-                    <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
-                        <div className="flex items-center space-x-2 mb-6 text-blue-600">
-                            <FileText className="w-6 h-6" />
-                            <h2 className="text-lg font-semibold text-slate-800">
-                                {isEditing ? 'Chỉnh sửa Khách hàng' : 'Thông tin Khách hàng'}
-                            </h2>
-                        </div>
-                        
-                        <form onSubmit={handleSave} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mã KH *</label>
-                                <input
-                                    type="text"
-                                    name="customerId"
-                                    required
-                                    readOnly={isEditing}
-                                    value={formData.customerId}
-                                    onChange={handleInputChange}
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${isEditing ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 border-slate-200'}`}
-                                    placeholder="Ví dụ: KH001"
-                                />
+            return (
+                <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
+                    <div className="max-w-7xl mx-auto space-y-8">
+                        <header className="flex items-center space-x-3 pb-6 border-b border-slate-200">
+                            <div className="bg-blue-600 p-3 rounded-lg flex items-center justify-center">
+                                <i className="fas fa-users text-2xl text-white"></i>
                             </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mã số thuế (MST)</label>
-                                <input
-                                    type="text"
-                                    name="taxId"
-                                    value={formData.taxId}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    placeholder="Nhập MST..."
-                                />
+                                <h1 className="text-2xl font-bold text-slate-900">Quản lý Doanh số Khách hàng</h1>
+                                <p className="text-sm text-slate-500">Nhập liệu và theo dõi top doanh số theo thời gian thực</p>
                             </div>
+                        </header>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tên Công ty</label>
-                                <div className="relative">
-                                    <Building2 className="w-5 h-5 absolute left-3 top-2.5 text-slate-400" />
-                                    <input
-                                        type="text"
-                                        name="companyName"
-                                        value={formData.companyName}
-                                        onChange={handleInputChange}
-                                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                        placeholder="Tên công ty..."
-                                    />
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {}
+                            <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                                <div className="flex items-center space-x-2 mb-6 text-blue-600">
+                                    <i className="fas fa-file-alt text-xl"></i>
+                                    <h2 className="text-lg font-semibold text-slate-800">
+                                        {isEditing ? 'Chỉnh sửa Khách hàng' : 'Thông tin Khách hàng'}
+                                    </h2>
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Người liên hệ</label>
-                                    <input
-                                        type="text"
-                                        name="contactName"
-                                        value={formData.contactName}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                        placeholder="Tên người LH..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
-                                    <div className="relative">
-                                        <Phone className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                                
+                                <form onSubmit={handleSave} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Mã KH *</label>
                                         <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleInputChange}
-                                            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                            placeholder="SĐT..."
+                                            type="text" name="customerId" required readOnly={isEditing}
+                                            value={formData.customerId} onChange={handleInputChange}
+                                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${isEditing ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 border-slate-200'}`}
+                                            placeholder="Ví dụ: KH001"
                                         />
                                     </div>
-                                </div>
-                            </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Mã số thuế (MST)</label>
+                                        <input
+                                            type="text" name="taxId" value={formData.taxId} onChange={handleInputChange}
+                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                            placeholder="Nhập MST..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tên Công ty</label>
+                                        <div className="relative">
+                                            <i className="fas fa-building absolute left-3 top-3 text-slate-400 mt-1"></i>
+                                            <input
+                                                type="text" name="companyName" value={formData.companyName} onChange={handleInputChange}
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                placeholder="Tên công ty..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Người liên hệ</label>
+                                            <input
+                                                type="text" name="contactName" value={formData.contactName} onChange={handleInputChange}
+                                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                placeholder="Tên người LH..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
+                                            <div className="relative">
+                                                <i className="fas fa-phone absolute left-3 top-3 text-slate-400 mt-1"></i>
+                                                <input
+                                                    type="tel" name="phone" value={formData.phone} onChange={handleInputChange}
+                                                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                    placeholder="SĐT..."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Doanh số KH (VNĐ)</label>
+                                        <div className="relative">
+                                            <i className="fas fa-money-bill-wave absolute left-3 top-3 text-slate-400 mt-1"></i>
+                                            <input
+                                                type="number" name="sales" value={formData.sales} onChange={handleInputChange}
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                placeholder="0" min="0"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
+                                        <textarea
+                                            name="notes" value={formData.notes} onChange={handleInputChange} rows="3"
+                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+                                            placeholder="Thêm ghi chú..."
+                                        ></textarea>
+                                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Doanh số KH (VNĐ)</label>
-                                <div className="relative">
-                                    <Banknote className="w-5 h-5 absolute left-3 top-2.5 text-slate-400" />
-                                    <input
-                                        type="number"
-                                        name="sales"
-                                        value={formData.sales}
-                                        onChange={handleInputChange}
-                                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                        placeholder="0"
-                                        min="0"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
-                                <textarea
-                                    name="notes"
-                                    value={formData.notes}
-                                    onChange={handleInputChange}
-                                    rows="3"
-                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                                    placeholder="Thêm ghi chú..."
-                                ></textarea>
+                                    {isEditing ? (
+                                        <div className="flex space-x-3 mt-4">
+                                            <button type="button" onClick={cancelEdit} className="flex-1 flex items-center justify-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-lg font-medium transition-colors">
+                                                <i className="fas fa-times"></i><span>Hủy</span>
+                                            </button>
+                                            <button type="submit" className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                                <i className="fas fa-check"></i><span>Cập nhật</span>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button type="submit" className="w-full mt-4 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                            <i className="fas fa-save"></i><span>Lưu Thông Tin</span>
+                                        </button>
+                                    )}
+                                </form>
                             </div>
 
                             {}
-                            {isEditing ? (
-                                <div className="flex space-x-3 mt-4">
-                                    <button
-                                        type="button"
-                                        onClick={cancelEdit}
-                                        className="flex-1 flex items-center justify-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-lg font-medium transition-colors"
-                                    >
-                                        <X className="w-5 h-5" />
-                                        <span>Hủy</span>
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
-                                    >
-                                        <Check className="w-5 h-5" />
-                                        <span>Cập nhật</span>
-                                    </button>
+                            <div className="lg:col-span-2">
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                        <div className="flex items-center space-x-2 text-yellow-500">
+                                            <i className="fas fa-trophy text-2xl"></i>
+                                            <h2 className="text-xl font-bold text-slate-800">Bảng Xếp hạng Doanh số</h2>
+                                        </div>
+                                        
+                                        {/* Thanh tìm kiếm */}
+                                        <div className="relative w-full sm:w-64">
+                                            <i className="fas fa-search absolute left-3 top-3 text-slate-400 mt-0.5"></i>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Tìm kiếm khách hàng..." 
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-x-auto rounded-xl border border-slate-100">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
+                                                    <th className="py-4 px-4 text-center w-16">#</th>
+                                                    <th className="py-4 px-4">Mã KH</th>
+                                                    <th className="py-4 px-4">MST</th>
+                                                    <th className="py-4 px-4">Tên Công ty</th>
+                                                    <th className="py-4 px-4">Người liên hệ</th>
+                                                    <th className="py-4 px-4">SĐT</th>
+                                                    <th className="py-4 px-4 text-right">Doanh số KH</th>
+                                                    <th className="py-4 px-4">Ghi chú</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {processedCustomers.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="8" className="py-12 text-center text-slate-400">
+                                                            {customers.length === 0 
+                                                                ? "Chưa có dữ liệu khách hàng. Hãy nhập thông tin bên trái để bắt đầu!" 
+                                                                : "Không tìm thấy khách hàng phù hợp với từ khóa."}
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    processedCustomers.map((customer, index) => (
+                                                        <tr 
+                                                            key={customer.customerId} 
+                                                            onClick={() => handleRowClick(customer)} 
+                                                            className="hover:bg-blue-50/70 transition-colors cursor-pointer group bg-white"
+                                                            title="Click để chỉnh sửa thông tin"
+                                                        >
+                                                            <td className="py-3 px-4 text-center font-medium text-slate-500">
+                                                                {index === 0 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 font-bold mx-auto">1</span> : 
+                                                                 index === 1 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold mx-auto">2</span> : 
+                                                                 index === 2 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600 font-bold mx-auto">3</span> : 
+                                                                 <span className="flex items-center justify-center w-8 h-8 mx-auto">{index + 1}</span>}
+                                                            </td>
+                                                            <td className="py-3 px-4 font-semibold text-blue-600 group-hover:text-blue-700">{customer.customerId}</td>
+                                                            <td className="py-3 px-4 text-sm text-slate-600">{customer.taxId || '-'}</td>
+                                                            <td className="py-3 px-4"><div className="font-medium text-slate-800">{customer.companyName || '-'}</div></td>
+                                                            <td className="py-3 px-4 text-sm text-slate-800">{customer.contactName || '-'}</td>
+                                                            <td className="py-3 px-4 text-sm text-slate-500">{customer.phone || '-'}</td>
+                                                            <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap">{formatCurrency(customer.sales)}</td>
+                                                            <td className="py-3 px-4 text-sm text-slate-500 max-w-[150px] truncate" title={customer.notes}>{customer.notes || '-'}</td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            ) : (
-                                <button
-                                    type="submit"
-                                    className="w-full mt-4 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors shadow-sm"
-                                >
-                                    <Save className="w-5 h-5" />
-                                    <span>Lưu Thông Tin</span>
-                                </button>
-                            )}
-                        </form>
+                            </div>
+                        </div>
                     </div>
 
                     {}
-                    {/* Cột phải: Bảng danh sách */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                                <div className="flex items-center space-x-3 text-yellow-500">
-                                    <Trophy className="w-7 h-7" />
-                                    <h2 className="text-xl font-bold text-slate-800">Bảng Xếp hạng Doanh số</h2>
+                    {showModal && (
+                        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+                                <div className="flex items-center space-x-3 text-amber-500 mb-4">
+                                    <i className="fas fa-exclamation-circle text-3xl"></i>
+                                    <h3 className="text-xl font-bold text-slate-900">Trùng Mã Khách Hàng</h3>
                                 </div>
-                                
-                                {/* Thanh tìm kiếm */}
-                                <div className="relative w-full sm:w-64">
-                                    <Search className="w-5 h-5 absolute left-3 top-2.5 text-slate-400" />
-                                    <input 
-                                        type="text" 
-                                        placeholder="Tìm kiếm khách hàng..." 
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    />
+                                <p className="text-slate-600 mb-6">Mã khách hàng <strong className="text-slate-900">"{pendingCustomer?.customerId}"</strong> đã tồn tại. Cập nhật thông tin và doanh số?</p>
+                                <div className="flex justify-end space-x-3">
+                                    <button onClick={handleCancelUpdate} className="px-4 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition-colors flex items-center space-x-2">
+                                        <i className="fas fa-times"></i><span>Không</span>
+                                    </button>
+                                    <button onClick={handleConfirmUpdate} className="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                                        <i className="fas fa-check"></i><span>Có, Cập nhật</span>
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="overflow-x-auto rounded-xl border border-slate-100">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-slate-50/80 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                                            <th className="py-4 px-4 text-center w-16">#</th>
-                                            <th className="py-4 px-4">Mã KH</th>
-                                            <th className="py-4 px-4">MST</th>
-                                            <th className="py-4 px-4">Tên Công ty</th>
-                                            <th className="py-4 px-4">Người liên hệ</th>
-                                            <th className="py-4 px-4">SĐT</th>
-                                            <th className="py-4 px-4 text-right">Doanh số KH</th>
-                                            <th className="py-4 px-4">Ghi chú</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {processedCustomers.length === 0 ? (
-                                            <tr>
-                                                <td colSpan="8" className="py-12 text-center text-slate-400 bg-slate-50/30">
-                                                    {customers.length === 0 
-                                                        ? "Chưa có dữ liệu khách hàng. Hãy nhập thông tin bên trái để bắt đầu!" 
-                                                        : "Không tìm thấy khách hàng nào phù hợp với từ khóa."}
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            processedCustomers.map((customer, index) => (
-                                                <tr 
-                                                    key={customer.customerId} 
-                                                    onClick={() => handleRowClick(customer)}
-                                                    className="hover:bg-blue-50/70 transition-colors cursor-pointer group bg-white"
-                                                    title="Click để chỉnh sửa thông tin"
-                                                >
-                                                    <td className="py-3 px-4 text-center font-medium text-slate-500">
-                                                        {index === 0 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 font-bold mx-auto">1</span> : 
-                                                         index === 1 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold mx-auto">2</span> : 
-                                                         index === 2 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600 font-bold mx-auto">3</span> : 
-                                                         <span className="flex items-center justify-center w-8 h-8 mx-auto">{index + 1}</span>}
-                                                    </td>
-                                                    <td className="py-3 px-4 font-semibold text-blue-600 group-hover:text-blue-700">{customer.customerId}</td>
-                                                    <td className="py-3 px-4 text-sm text-slate-600">{customer.taxId || '-'}</td>
-                                                    <td className="py-3 px-4">
-                                                        <div className="font-medium text-slate-800">{customer.companyName || '-'}</div>
-                                                    </td>
-                                                    <td className="py-3 px-4 text-sm text-slate-800">
-                                                        {customer.contactName || '-'}
-                                                    </td>
-                                                    <td className="py-3 px-4 text-sm text-slate-500">
-                                                        {customer.phone || '-'}
-                                                    </td>
-                                                    <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap">
-                                                        {formatCurrency(customer.sales)}
-                                                    </td>
-                                                    <td className="py-3 px-4 text-sm text-slate-500 max-w-[150px] truncate" title={customer.notes}>
-                                                        {customer.notes || '-'}
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
-            </div>
+            );
+        }
 
-            {}
-            {/* Modal Cảnh báo trùng lặp */}
-            {showModal && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center space-x-3 text-amber-500 mb-4">
-                            <AlertCircle className="w-8 h-8" />
-                            <h3 className="text-xl font-bold text-slate-900">Trùng Mã Khách Hàng</h3>
-                        </div>
-                        
-                        <p className="text-slate-600 mb-6 leading-relaxed">
-                            Mã khách hàng <strong className="text-slate-900">"{pendingCustomer?.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số cho khách hàng này không?
-                        </p>
-                        
-                        <div className="flex justify-end space-x-3">
-                            <button
-                                onClick={handleCancelUpdate}
-                                className="px-4 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition-colors flex items-center space-x-2"
-                            >
-                                <X className="w-4 h-4" />
-                                <span>Không (Hủy)</span>
-                            </button>
-                            <button
-                                onClick={handleConfirmUpdate}
-                                className="px-4 py-2.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                            >
-                                <Check className="w-4 h-4" />
-                                <span>Có, Cập nhật</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
