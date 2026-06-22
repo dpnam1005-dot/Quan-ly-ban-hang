@@ -4,344 +4,521 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Doanh số Khách hàng</title>
-    <!-- Nhúng Tailwind CSS để style giao diện -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Nhúng thư viện React -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <!-- Nhúng thư viện Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Nhúng thư viện FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Cơ bản */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+        }
+
+        /* Layout Grid */
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-section {
+            flex: 1;
+            min-width: 300px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .table-section {
+            flex: 2;
+            min-width: 600px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .edit-actions {
+            display: none;
+            gap: 10px;
+        }
+
+        /* Table Styles */
+        .table-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 250px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+        }
+
+        tbody tr:hover {
+            background-color: #f1f5f9;
+            cursor: pointer;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .money {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-actions .btn {
+            width: auto;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .table-section {
+                min-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <header class="header">
+            <h1>Quản lý Doanh số Khách hàng</h1>
+            <p>Nhập liệu và theo dõi khách hàng bằng HTML/JS cơ bản</p>
+        </header>
 
-    <script type="text/babel" data-presets="react,env">
-        const { useState, useMemo } = React;
+        <div class="main-content">
+            <!-- Cột nhập liệu -->
+            <section class="form-section">
+                <h2 id="formTitle">Thông tin Khách hàng</h2>
+                <br>
+                <form id="customerForm">
+                    <div class="form-group">
+                        <label for="customerId">Mã KH *</label>
+                        <input type="text" id="customerId" class="form-control" required placeholder="Ví dụ: KH001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taxId">Mã số thuế (MST)</label>
+                        <input type="text" id="taxId" class="form-control" placeholder="Nhập MST...">
+                    </div>
 
-        function App() {
-            // State quản lý danh sách khách hàng
-            const [customers, setCustomers] = useState([]);
-            
-            // State quản lý tìm kiếm
-            const [searchQuery, setSearchQuery] = useState('');
-            
-            // State quản lý form nhập liệu
-            const initialFormState = {
-                customerId: '',
-                taxId: '',
-                companyName: '',
-                contactName: '',
-                phone: '',
-                sales: '',
-                notes: ''
-            };
-            const [formData, setFormData] = useState(initialFormState);
-            const [showModal, setShowModal] = useState(false);
-            const [pendingCustomer, setPendingCustomer] = useState(null);
-            const [isEditing, setIsEditing] = useState(false);
+                    <div class="form-group">
+                        <label for="companyName">Tên Công ty</label>
+                        <input type="text" id="companyName" class="form-control" placeholder="Tên công ty...">
+                    </div>
 
-            // Xử lý thay đổi input
-            const handleInputChange = (e) => {
-                const { name, value } = e.target;
-                setFormData(prev => ({ ...prev, [name]: value }));
-            };
-
-            const handleSave = (e) => {
-                e.preventDefault();
-                if (!formData.customerId.trim()) return;
-
-                if (isEditing) {
-                    setCustomers(prev => prev.map(c => 
-                        c.customerId.toLowerCase() === formData.customerId.toLowerCase()
-                            ? { ...formData, sales: Number(formData.sales) || 0 }
-                            : c
-                    ));
-                    setIsEditing(false);
-                    setFormData(initialFormState);
-                    return;
-                }
-
-                const existingCustomerIndex = customers.findIndex(
-                    c => c.customerId.toLowerCase() === formData.customerId.toLowerCase()
-                );
-
-                if (existingCustomerIndex !== -1) {
-                    setPendingCustomer(formData);
-                    setShowModal(true);
-                } else {
-                    setCustomers(prev => [...prev, { ...formData, sales: Number(formData.sales) || 0 }]);
-                    setFormData(initialFormState);
-                }
-            };
-
-            const handleConfirmUpdate = () => {
-                setCustomers(prev => prev.map(c => 
-                    c.customerId.toLowerCase() === pendingCustomer.customerId.toLowerCase()
-                        ? { ...pendingCustomer, sales: Number(pendingCustomer.sales) || 0 }
-                        : c
-                ));
-                setShowModal(false);
-                setPendingCustomer(null);
-                setFormData(initialFormState);
-            };
-
-            const handleCancelUpdate = () => {
-                setShowModal(false);
-                setPendingCustomer(null);
-            };
-
-            const handleRowClick = (customer) => {
-                setFormData(customer);
-                setIsEditing(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-
-            const cancelEdit = () => {
-                setFormData(initialFormState);
-                setIsEditing(false);
-            };
-
-            const processedCustomers = useMemo(() => {
-                let result = [...customers];
-                
-                // Tìm kiếm
-                if (searchQuery.trim() !== '') {
-                    const query = searchQuery.toLowerCase();
-                    result = result.filter(c => 
-                        c.customerId.toLowerCase().includes(query) ||
-                        (c.companyName && c.companyName.toLowerCase().includes(query)) ||
-                        (c.taxId && c.taxId.toLowerCase().includes(query)) ||
-                        (c.contactName && c.contactName.toLowerCase().includes(query)) ||
-                        (c.phone && c.phone.includes(query))
-                    );
-                }
-                
-                // Sắp xếp doanh thu giảm dần (Hiển thị toàn bộ danh sách, không dùng slice nữa)
-                return result.sort((a, b) => b.sales - a.sales);
-            }, [customers, searchQuery]);
-
-            const formatCurrency = (amount) => {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(amount);
-            };
-
-            return (
-                <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
-                    <div className="max-w-7xl mx-auto space-y-8">
-                        <header className="flex items-center space-x-3 pb-6 border-b border-slate-200">
-                            <div className="bg-blue-600 p-3 rounded-lg flex items-center justify-center">
-                                <i className="fas fa-users text-2xl text-white"></i>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Quản lý Doanh số Khách hàng</h1>
-                                <p className="text-sm text-slate-500">Nhập liệu và theo dõi top doanh số theo thời gian thực</p>
-                            </div>
-                        </header>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {}
-                            <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
-                                <div className="flex items-center space-x-2 mb-6 text-blue-600">
-                                    <i className="fas fa-file-alt text-xl"></i>
-                                    <h2 className="text-lg font-semibold text-slate-800">
-                                        {isEditing ? 'Chỉnh sửa Khách hàng' : 'Thông tin Khách hàng'}
-                                    </h2>
-                                </div>
-                                
-                                <form onSubmit={handleSave} className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Mã KH *</label>
-                                        <input
-                                            type="text" name="customerId" required readOnly={isEditing}
-                                            value={formData.customerId} onChange={handleInputChange}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${isEditing ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 border-slate-200'}`}
-                                            placeholder="Ví dụ: KH001"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Mã số thuế (MST)</label>
-                                        <input
-                                            type="text" name="taxId" value={formData.taxId} onChange={handleInputChange}
-                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                            placeholder="Nhập MST..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Tên Công ty</label>
-                                        <div className="relative">
-                                            <i className="fas fa-building absolute left-3 top-3 text-slate-400 mt-1"></i>
-                                            <input
-                                                type="text" name="companyName" value={formData.companyName} onChange={handleInputChange}
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                                placeholder="Tên công ty..."
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Người liên hệ</label>
-                                            <input
-                                                type="text" name="contactName" value={formData.contactName} onChange={handleInputChange}
-                                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                                placeholder="Tên người LH..."
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Số điện thoại</label>
-                                            <div className="relative">
-                                                <i className="fas fa-phone absolute left-3 top-3 text-slate-400 mt-1"></i>
-                                                <input
-                                                    type="tel" name="phone" value={formData.phone} onChange={handleInputChange}
-                                                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                                    placeholder="SĐT..."
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Doanh số KH (VNĐ)</label>
-                                        <div className="relative">
-                                            <i className="fas fa-money-bill-wave absolute left-3 top-3 text-slate-400 mt-1"></i>
-                                            <input
-                                                type="number" name="sales" value={formData.sales} onChange={handleInputChange}
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                                placeholder="0" min="0"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Ghi chú</label>
-                                        <textarea
-                                            name="notes" value={formData.notes} onChange={handleInputChange} rows="3"
-                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                                            placeholder="Thêm ghi chú..."
-                                        ></textarea>
-                                    </div>
-
-                                    {isEditing ? (
-                                        <div className="flex space-x-3 mt-4">
-                                            <button type="button" onClick={cancelEdit} className="flex-1 flex items-center justify-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-lg font-medium transition-colors">
-                                                <i className="fas fa-times"></i><span>Hủy</span>
-                                            </button>
-                                            <button type="submit" className="flex-1 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                                                <i className="fas fa-check"></i><span>Cập nhật</span>
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button type="submit" className="w-full mt-4 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-                                            <i className="fas fa-save"></i><span>Lưu Thông Tin</span>
-                                        </button>
-                                    )}
-                                </form>
-                            </div>
-
-                            {}
-                            <div className="lg:col-span-2">
-                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                                        <div className="flex items-center space-x-2 text-yellow-500">
-                                            <i className="fas fa-trophy text-2xl"></i>
-                                            <h2 className="text-xl font-bold text-slate-800">Bảng Xếp hạng Doanh số</h2>
-                                        </div>
-                                        
-                                        {/* Thanh tìm kiếm */}
-                                        <div className="relative w-full sm:w-64">
-                                            <i className="fas fa-search absolute left-3 top-3 text-slate-400 mt-0.5"></i>
-                                            <input 
-                                                type="text" 
-                                                placeholder="Tìm kiếm khách hàng..." 
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="overflow-x-auto rounded-xl border border-slate-100">
-                                        <table className="w-full text-left border-collapse">
-                                            <thead>
-                                                <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                                                    <th className="py-4 px-4 text-center w-16">#</th>
-                                                    <th className="py-4 px-4">Mã KH</th>
-                                                    <th className="py-4 px-4">MST</th>
-                                                    <th className="py-4 px-4">Tên Công ty</th>
-                                                    <th className="py-4 px-4">Người liên hệ</th>
-                                                    <th className="py-4 px-4">SĐT</th>
-                                                    <th className="py-4 px-4 text-right">Doanh số KH</th>
-                                                    <th className="py-4 px-4">Ghi chú</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-100">
-                                                {processedCustomers.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan="8" className="py-12 text-center text-slate-400">
-                                                            {customers.length === 0 
-                                                                ? "Chưa có dữ liệu khách hàng. Hãy nhập thông tin bên trái để bắt đầu!" 
-                                                                : "Không tìm thấy khách hàng phù hợp với từ khóa."}
-                                                        </td>
-                                                    </tr>
-                                                ) : (
-                                                    processedCustomers.map((customer, index) => (
-                                                        <tr 
-                                                            key={customer.customerId} 
-                                                            onClick={() => handleRowClick(customer)} 
-                                                            className="hover:bg-blue-50/70 transition-colors cursor-pointer group bg-white"
-                                                            title="Click để chỉnh sửa thông tin"
-                                                        >
-                                                            <td className="py-3 px-4 text-center font-medium text-slate-500">
-                                                                {index === 0 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 font-bold mx-auto">1</span> : 
-                                                                 index === 1 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold mx-auto">2</span> : 
-                                                                 index === 2 ? <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600 font-bold mx-auto">3</span> : 
-                                                                 <span className="flex items-center justify-center w-8 h-8 mx-auto">{index + 1}</span>}
-                                                            </td>
-                                                            <td className="py-3 px-4 font-semibold text-blue-600 group-hover:text-blue-700">{customer.customerId}</td>
-                                                            <td className="py-3 px-4 text-sm text-slate-600">{customer.taxId || '-'}</td>
-                                                            <td className="py-3 px-4"><div className="font-medium text-slate-800">{customer.companyName || '-'}</div></td>
-                                                            <td className="py-3 px-4 text-sm text-slate-800">{customer.contactName || '-'}</td>
-                                                            <td className="py-3 px-4 text-sm text-slate-500">{customer.phone || '-'}</td>
-                                                            <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap">{formatCurrency(customer.sales)}</td>
-                                                            <td className="py-3 px-4 text-sm text-slate-500 max-w-[150px] truncate" title={customer.notes}>{customer.notes || '-'}</td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contactName">Người liên hệ</label>
+                            <input type="text" id="contactName" class="form-control" placeholder="Tên người LH...">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Số điện thoại</label>
+                            <input type="tel" id="phone" class="form-control" placeholder="SĐT...">
                         </div>
                     </div>
 
-                    {}
-                    {showModal && (
-                        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-                                <div className="flex items-center space-x-3 text-amber-500 mb-4">
-                                    <i className="fas fa-exclamation-circle text-3xl"></i>
-                                    <h3 className="text-xl font-bold text-slate-900">Trùng Mã Khách Hàng</h3>
-                                </div>
-                                <p className="text-slate-600 mb-6">Mã khách hàng <strong className="text-slate-900">"{pendingCustomer?.customerId}"</strong> đã tồn tại. Cập nhật thông tin và doanh số?</p>
-                                <div className="flex justify-end space-x-3">
-                                    <button onClick={handleCancelUpdate} className="px-4 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition-colors flex items-center space-x-2">
-                                        <i className="fas fa-times"></i><span>Không</span>
-                                    </button>
-                                    <button onClick={handleConfirmUpdate} className="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                                        <i className="fas fa-check"></i><span>Có, Cập nhật</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <div class="form-group">
+                        <label for="sales">Doanh số KH (VNĐ)</label>
+                        <input type="number" id="sales" class="form-control" placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Ghi chú</label>
+                        <textarea id="notes" class="form-control" rows="3" placeholder="Thêm ghi chú..."></textarea>
+                    </div>
+
+                    <!-- Nút bấm -->
+                    <button type="submit" id="btnSubmit" class="btn btn-primary">Lưu Thông Tin</button>
+                    
+                    <div id="editActions" class="edit-actions">
+                        <button type="button" id="btnCancelEdit" class="btn btn-secondary">Hủy</button>
+                        <button type="button" id="btnUpdate" class="btn btn-primary">Cập nhật</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Cột danh sách bảng -->
+            <section class="table-section">
+                <div class="table-header-flex">
+                    <h2>Bảng Xếp hạng Doanh số</h2>
+                    <input type="text" id="searchInput" class="search-box" placeholder="Tìm kiếm khách hàng...">
                 </div>
-            );
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Mã KH</th>
+                                <th>MST</th>
+                                <th>Tên Công ty</th>
+                                <th>Người liên hệ</th>
+                                <th>SĐT</th>
+                                <th class="text-right">Doanh số KH</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Dữ liệu sẽ được JS render vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận trùng mã KH -->
+    <div id="duplicateModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: #d97706; margin-bottom: 10px;">Trùng Mã Khách Hàng</h3>
+            <p id="modalMessage">Mã khách hàng này đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?</p>
+            <div class="modal-actions">
+                <button type="button" id="btnCancelModal" class="btn btn-secondary">Không</button>
+                <button type="button" id="btnConfirmModal" class="btn btn-primary">Có, Cập nhật</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script xử lý logic -->
+    <script>
+        // Mảng chứa dữ liệu khách hàng
+        let customers = [];
+        let isEditing = false;
+        let pendingCustomerData = null;
+
+        // Lấy các element trên DOM
+        const form = document.getElementById('customerForm');
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('tableBody');
+        const modal = document.getElementById('duplicateModal');
+        const modalMessage = document.getElementById('modalMessage');
+
+        // Elements form
+        const idInput = document.getElementById('customerId');
+        const taxIdInput = document.getElementById('taxId');
+        const companyInput = document.getElementById('companyName');
+        const contactInput = document.getElementById('contactName');
+        const phoneInput = document.getElementById('phone');
+        const salesInput = document.getElementById('sales');
+        const notesInput = document.getElementById('notes');
+
+        const btnSubmit = document.getElementById('btnSubmit');
+        const editActions = document.getElementById('editActions');
+        const btnCancelEdit = document.getElementById('btnCancelEdit');
+        const btnUpdate = document.getElementById('btnUpdate');
+        const formTitle = document.getElementById('formTitle');
+
+        // Hàm format tiền tệ
+        function formatCurrency(amount) {
+            return Number(amount).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Lấy dữ liệu từ form
+        function getFormData() {
+            return {
+                customerId: idInput.value.trim(),
+                taxId: taxIdInput.value.trim(),
+                companyName: companyInput.value.trim(),
+                contactName: contactInput.value.trim(),
+                phone: phoneInput.value.trim(),
+                sales: Number(salesInput.value) || 0,
+                notes: notesInput.value.trim()
+            };
+        }
+
+        // Đổ dữ liệu lên form
+        function setFormData(data) {
+            idInput.value = data.customerId || '';
+            taxIdInput.value = data.taxId || '';
+            companyInput.value = data.companyName || '';
+            contactInput.value = data.contactName || '';
+            phoneInput.value = data.phone || '';
+            salesInput.value = data.sales || '';
+            notesInput.value = data.notes || '';
+        }
+
+        // Chuyển đổi giao diện Thêm / Sửa
+        function toggleEditMode(editing) {
+            isEditing = editing;
+            if (editing) {
+                formTitle.innerText = "Chỉnh sửa Khách hàng";
+                btnSubmit.style.display = 'none';
+                editActions.style.display = 'flex';
+                idInput.readOnly = true;
+                idInput.style.backgroundColor = '#f1f5f9';
+            } else {
+                formTitle.innerText = "Thông tin Khách hàng";
+                btnSubmit.style.display = 'block';
+                editActions.style.display = 'none';
+                idInput.readOnly = false;
+                idInput.style.backgroundColor = '#fff';
+                setFormData({}); // Reset form
+            }
+        }
+
+        // Render bảng dữ liệu
+        function renderTable() {
+            const query = searchInput.value.toLowerCase();
+            
+            // Tìm kiếm
+            let filtered = customers.filter(c => 
+                c.customerId.toLowerCase().includes(query) ||
+                c.companyName.toLowerCase().includes(query) ||
+                c.taxId.toLowerCase().includes(query) ||
+                c.contactName.toLowerCase().includes(query) ||
+                c.phone.includes(query)
+            );
+
+            // Sắp xếp doanh thu giảm dần
+            filtered.sort((a, b) => b.sales - a.sales);
+
+            // Tạo HTML cho bảng
+            tableBody.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #94a3b8; padding: 30px;">Không có dữ liệu.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((customer, index) => {
+                const tr = document.createElement('tr');
+                tr.title = "Click để chỉnh sửa";
+                // Khi click vào dòng thì đổ dữ liệu lên form
+                tr.onclick = () => {
+                    setFormData(customer);
+                    toggleEditMode(true);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+
+                tr.innerHTML = `
+                    <td class="text-center"><strong>${index + 1}</strong></td>
+                    <td style="color: var(--primary-color); font-weight: bold;">${customer.customerId}</td>
+                    <td>${customer.taxId || '-'}</td>
+                    <td><strong>${customer.companyName || '-'}</strong></td>
+                    <td>${customer.contactName || '-'}</td>
+                    <td>${customer.phone || '-'}</td>
+                    <td class="text-right money">${formatCurrency(customer.sales)}</td>
+                    <td>${customer.notes || '-'}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Xử lý khi ấn nút Lưu Thông Tin (Thêm mới)
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = getFormData();
+            if (!data.customerId) return;
+
+            // Kiểm tra trùng lặp
+            const exists = customers.find(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
+            
+            if (exists) {
+                // Hiện modal hỏi có cập nhật không
+                pendingCustomerData = data;
+                modalMessage.innerHTML = `Mã khách hàng <strong>"${data.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?`;
+                modal.style.display = 'flex';
+            } else {
+                // Thêm mới
+                customers.push(data);
+                toggleEditMode(false); // Reset form
+                renderTable();
+            }
+        });
+
+        // Xử lý khi ấn nút Cập nhật (Đang ở chế độ Edit)
+        btnUpdate.addEventListener('click', function() {
+            const data = getFormData();
+            const index = customers.findIndex(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
+            if (index !== -1) {
+                customers[index] = data;
+                toggleEditMode(false);
+                renderTable();
+            }
+        });
+
+        // Xử lý Hủy chỉnh sửa
+        btnCancelEdit.addEventListener('click', function() {
+            toggleEditMode(false);
+        });
+
+        // Xử lý tìm kiếm
+        searchInput.addEventListener('input', renderTable);
+
+        // Xử lý Modal (Xác nhận ghi đè dữ liệu trùng)
+        document.getElementById('btnConfirmModal').addEventListener('click', function() {
+            const index = customers.findIndex(c => c.customerId.toLowerCase() === pendingCustomerData.customerId.toLowerCase());
+            if (index !== -1) {
+                customers[index] = pendingCustomerData;
+            }
+            modal.style.display = 'none';
+            pendingCustomerData = null;
+            toggleEditMode(false);
+            renderTable();
+        });
+
+        document.getElementById('btnCancelModal').addEventListener('click', function() {
+            modal.style.display = 'none';
+            pendingCustomerData = null;
+        });
+
+        // Hiển thị bảng rỗng ban đầu
+        renderTable();
     </script>
 </body>
 </html>
