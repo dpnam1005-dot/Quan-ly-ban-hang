@@ -89,10 +89,11 @@
 
         .form-control {
             width: 100%;
-            padding: 10px;
+            padding: 12px 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 14px;
+            line-height: 1.5;
         }
 
         .form-control:focus {
@@ -363,9 +364,9 @@
                     <button type="submit" id="btnSubmit" class="btn btn-primary">Lưu Thông Tin</button>
                     
                     <div id="editActions" class="edit-actions">
-                        <button type="button" id="btnCancelEdit" class="btn btn-secondary">Hủy</button>
-                        <button type="button" id="btnDelete" class="btn btn-danger" title="Xóa khách hàng này">Xóa</button>
                         <button type="button" id="btnUpdate" class="btn btn-primary">Cập nhật</button>
+                        <button type="button" id="btnDelete" class="btn btn-danger" title="Xóa khách hàng này">Xóa</button>
+                        <button type="button" id="btnCancelEdit" class="btn btn-secondary">Hủy thay đổi</button>
                     </div>
                 </form>
             </section>
@@ -396,14 +397,11 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <!-- Dữ liệu sẽ được JS render vào đây -->
                         </tbody>
                     </table>
                 </div>
                 
-                <!-- Thanh phân trang -->
                 <div id="pagination" class="pagination-container">
-                    <!-- Các nút phân trang sẽ được render vào đây -->
                 </div>
             </section>
         </div>
@@ -445,47 +443,34 @@
         </div>
     </div>
 
-    <!-- Script xử lý logic -->
     <script>
-        // Mảng chứa dữ liệu khách hàng (Lấy từ Local Storage nếu có)
         let customers = JSON.parse(localStorage.getItem('customers_data')) || [];
         let isEditing = false;
         let pendingCustomerData = null;
-        let pendingActionData = null; // Biến lưu tạm thao tác đang bị cảnh báo
+        let pendingActionData = null;
 
-        // Hàm lưu vào Local Storage
         function saveData() {
             localStorage.setItem('customers_data', JSON.stringify(customers));
         }
 
-        // Cấu hình phân trang
         let currentPage = 1;
         const itemsPerPage = 10;
 
-        // Lấy các element trên DOM
         const form = document.getElementById('customerForm');
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
         const paginationContainer = document.getElementById('pagination');
-        
-        // Elements Modal Trùng lặp
         const modal = document.getElementById('duplicateModal');
         const modalMessage = document.getElementById('modalMessage');
-
-        // Elements Modal Xóa
         const deleteModal = document.getElementById('deleteModal');
         const deleteModalMessage = document.getElementById('deleteModalMessage');
         const btnCancelDelete = document.getElementById('btnCancelDelete');
         const btnConfirmDelete = document.getElementById('btnConfirmDelete');
         let customerToDelete = null;
-
-        // Elements Modal Cảnh báo trùng lặp mềm
         const warningModal = document.getElementById('warningModal');
         const warningModalMessage = document.getElementById('warningModalMessage');
         const btnCancelWarning = document.getElementById('btnCancelWarning');
         const btnConfirmWarning = document.getElementById('btnConfirmWarning');
-
-        // Elements form
         const idInput = document.getElementById('customerId');
         const taxIdInput = document.getElementById('taxId');
         const companyInput = document.getElementById('companyName');
@@ -493,7 +478,6 @@
         const phoneInput = document.getElementById('phone');
         const salesInput = document.getElementById('sales');
         const notesInput = document.getElementById('notes');
-
         const btnSubmit = document.getElementById('btnSubmit');
         const editActions = document.getElementById('editActions');
         const btnCancelEdit = document.getElementById('btnCancelEdit');
@@ -503,20 +487,15 @@
         const btnExportExcel = document.getElementById('btnExportExcel');
         const btnExportPDF = document.getElementById('btnExportPDF');
 
-        // Xử lý định dạng tiền tệ có dấu phẩy ngay khi gõ vào ô Doanh số
         salesInput.addEventListener('input', function(e) {
-            // Loại bỏ các ký tự không phải là số
             let rawValue = this.value.replace(/\D/g, '');
-            // Thêm dấu phẩy ngăn cách phần nghìn
             this.value = rawValue ? parseInt(rawValue, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
         });
 
-        // Hàm format tiền tệ
         function formatCurrency(amount) {
             return Number(amount).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         }
 
-        // Lấy dữ liệu từ form
         function getFormData() {
             return {
                 customerId: idInput.value.trim(),
@@ -524,24 +503,21 @@
                 companyName: companyInput.value.trim(),
                 contactName: contactInput.value.trim(),
                 phone: phoneInput.value.trim(),
-                sales: Number(salesInput.value.replace(/,/g, '')) || 0, // Xóa dấu phẩy trước khi chuyển thành số
+                sales: Number(salesInput.value.replace(/,/g, '')) || 0,
                 notes: notesInput.value.trim()
             };
         }
 
-        // Đổ dữ liệu lên form
         function setFormData(data) {
             idInput.value = data.customerId || '';
             taxIdInput.value = data.taxId || '';
             companyInput.value = data.companyName || '';
             contactInput.value = data.contactName || '';
             phoneInput.value = data.phone || '';
-            // Định dạng lại có dấu phẩy khi xem/sửa
             salesInput.value = data.sales ? data.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
             notesInput.value = data.notes || '';
         }
 
-        // Chuyển đổi giao diện Thêm / Sửa
         function toggleEditMode(editing) {
             isEditing = editing;
             if (editing) {
@@ -556,61 +532,37 @@
                 editActions.style.display = 'none';
                 idInput.readOnly = false;
                 idInput.style.backgroundColor = '#fff';
-                setFormData({}); // Reset form
+                setFormData({});
             }
         }
 
-        // Render phân trang
         function renderPagination(totalItems) {
             paginationContainer.innerHTML = '';
             const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-
-            if (totalPages <= 1) return; // Không hiển thị phân trang nếu chỉ có 1 trang
-
-            // Nút "Trước"
+            if (totalPages <= 1) return;
             const prevBtn = document.createElement('button');
             prevBtn.className = 'page-btn';
             prevBtn.innerText = 'Trước';
             prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                }
-            };
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
             paginationContainer.appendChild(prevBtn);
-
-            // Các nút số trang
             for (let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
                 pageBtn.innerText = i;
-                pageBtn.onclick = () => {
-                    currentPage = i;
-                    renderTable();
-                };
+                pageBtn.onclick = () => { currentPage = i; renderTable(); };
                 paginationContainer.appendChild(pageBtn);
             }
-
-            // Nút "Sau"
             const nextBtn = document.createElement('button');
             nextBtn.className = 'page-btn';
             nextBtn.innerText = 'Sau';
             nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTable();
-                }
-            };
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTable(); } };
             paginationContainer.appendChild(nextBtn);
         }
 
-        // Render bảng dữ liệu (Bao gồm sắp xếp và phân trang)
         function renderTable() {
             const query = searchInput.value.toLowerCase();
-            
-            // Lọc dữ liệu theo tìm kiếm
             let filtered = customers.filter(c => 
                 c.customerId.toLowerCase().includes(query) ||
                 c.companyName.toLowerCase().includes(query) ||
@@ -618,45 +570,22 @@
                 c.contactName.toLowerCase().includes(query) ||
                 c.phone.includes(query)
             );
-
-            // LUÔN Sắp xếp doanh thu giảm dần (từ cao xuống thấp)
             filtered.sort((a, b) => b.sales - a.sales);
-
-            // Kiểm tra tổng số trang và điều chỉnh currentPage nếu bị vượt quá (VD: sau khi xóa/lọc)
             const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            if (currentPage > totalPages) {
-                currentPage = totalPages;
-            }
-
-            // Tính toán vị trí cắt mảng (Phân trang)
+            if (currentPage > totalPages) currentPage = totalPages;
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, endIndex);
-
-            // Render dữ liệu ra HTML
+            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
             tableBody.innerHTML = '';
-            
             if (paginatedItems.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #94a3b8; padding: 30px;">Không có dữ liệu.</td></tr>`;
                 paginationContainer.innerHTML = '';
                 return;
             }
-
             paginatedItems.forEach((customer, index) => {
                 const tr = document.createElement('tr');
-                tr.title = "Click để chỉnh sửa";
-                // Khi click vào dòng thì đổ dữ liệu lên form
-                tr.onclick = () => {
-                    setFormData(customer);
-                    toggleEditMode(true);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
-
-                // Số thứ tự hiển thị dựa theo trang hiện tại (tính từ toàn bộ danh sách)
-                const displayIndex = startIndex + index + 1;
-
+                tr.onclick = () => { setFormData(customer); toggleEditMode(true); window.scrollTo({ top: 0, behavior: 'smooth' }); };
                 tr.innerHTML = `
-                    <td class="text-center"><strong>${displayIndex}</strong></td>
+                    <td class="text-center"><strong>${startIndex + index + 1}</strong></td>
                     <td style="color: var(--primary-color); font-weight: bold;">${customer.customerId}</td>
                     <td>${customer.taxId || '-'}</td>
                     <td><strong>${customer.companyName || '-'}</strong></td>
@@ -667,258 +596,63 @@
                 `;
                 tableBody.appendChild(tr);
             });
-
-            // Gọi render thanh phân trang
             renderPagination(filtered.length);
         }
 
-        // Hàm kiểm tra trùng lặp MST, Tên công ty, SĐT
         function checkSoftDuplicates(data) {
             let warnings = [];
             customers.forEach(c => {
-                // Không so sánh với chính nó khi đang update
                 if (c.customerId.toLowerCase() !== data.customerId.toLowerCase()) {
-                    if (data.taxId && c.taxId && c.taxId === data.taxId) {
-                        warnings.push(`- <strong>Mã số thuế</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
-                    }
-                    if (data.companyName && c.companyName && c.companyName.toLowerCase() === data.companyName.toLowerCase()) {
-                        warnings.push(`- <strong>Tên công ty</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
-                    }
-                    if (data.phone && c.phone && c.phone === data.phone) {
-                        warnings.push(`- <strong>Số điện thoại</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
-                    }
+                    if (data.taxId && c.taxId && c.taxId === data.taxId) warnings.push(`- <strong>Mã số thuế</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    if (data.companyName && c.companyName && c.companyName.toLowerCase() === data.companyName.toLowerCase()) warnings.push(`- <strong>Tên công ty</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    if (data.phone && c.phone && c.phone === data.phone) warnings.push(`- <strong>Số điện thoại</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
                 }
             });
-            return [...new Set(warnings)]; // Lọc các cảnh báo trùng nhau
+            return [...new Set(warnings)];
         }
 
-        // Hàm thực thi việc lưu sau khi đã vượt qua (hoặc xác nhận) các cảnh báo
         function proceedWithSave(data, isUpdating) {
             if (isUpdating) {
                 const index = customers.findIndex(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
-                if (index !== -1) {
-                    customers[index] = data;
-                    saveData();
-                    toggleEditMode(false);
-                    renderTable();
-                }
+                if (index !== -1) { customers[index] = data; saveData(); toggleEditMode(false); renderTable(); }
             } else {
                 const exists = customers.find(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
                 if (exists) {
-                    // Nếu trùng mã ID thì hiện hộp thoại hỏi ghi đè
                     pendingCustomerData = data;
                     modalMessage.innerHTML = `Mã khách hàng <strong>"${data.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?`;
                     modal.style.display = 'flex';
                 } else {
-                    // Thêm mới
-                    customers.push(data);
-                    saveData();
-                    toggleEditMode(false);
-                    renderTable();
+                    customers.push(data); saveData(); toggleEditMode(false); renderTable();
                 }
             }
         }
 
-        // Hàm xử lý chung khi ấn nút Lưu hoặc Cập nhật
         function handleSaveAction(data, isUpdating) {
             if (!data.customerId) return;
-            
             const softWarnings = checkSoftDuplicates(data);
             if (softWarnings.length > 0) {
-                // Hiện cảnh báo nếu có trùng lặp
                 pendingActionData = { data, isUpdating };
                 warningModalMessage.innerHTML = softWarnings.join('<br>') + `<br><br>Bạn có chắc chắn muốn tiếp tục lưu thông tin này?`;
                 warningModal.style.display = 'flex';
-            } else {
-                // Tiếp tục lưu bình thường
-                proceedWithSave(data, isUpdating);
-            }
+            } else { proceedWithSave(data, isUpdating); }
         }
 
-        // Xử lý khi ấn nút Lưu Thông Tin (Thêm mới)
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const data = getFormData();
-            handleSaveAction(data, false);
-        });
+        form.addEventListener('submit', function(e) { e.preventDefault(); handleSaveAction(getFormData(), false); });
+        btnUpdate.addEventListener('click', function() { handleSaveAction(getFormData(), true); });
+        btnConfirmWarning.addEventListener('click', function() { if (pendingActionData) proceedWithSave(pendingActionData.data, pendingActionData.isUpdating); warningModal.style.display = 'none'; pendingActionData = null; });
+        btnCancelWarning.addEventListener('click', function() { warningModal.style.display = 'none'; pendingActionData = null; });
+        btnDelete.addEventListener('click', function() { const id = idInput.value.trim(); customerToDelete = id; deleteModalMessage.innerHTML = `Bạn có chắc chắn muốn xóa khách hàng <strong>"${id}"</strong> không?`; deleteModal.style.display = 'flex'; });
+        btnConfirmDelete.addEventListener('click', function() { if (customerToDelete) { customers = customers.filter(c => c.customerId.toLowerCase() !== customerToDelete.toLowerCase()); saveData(); toggleEditMode(false); renderTable(); } deleteModal.style.display = 'none'; });
+        btnCancelDelete.addEventListener('click', function() { deleteModal.style.display = 'none'; });
+        btnCancelEdit.addEventListener('click', function() { toggleEditMode(false); });
+        searchInput.addEventListener('input', () => { currentPage = 1; renderTable(); });
 
-        // Xử lý khi ấn nút Cập nhật (Đang ở chế độ Edit)
-        btnUpdate.addEventListener('click', function() {
-            const data = getFormData();
-            handleSaveAction(data, true);
-        });
-
-        // Xử lý nút xác nhận trong Modal Cảnh báo
-        btnConfirmWarning.addEventListener('click', function() {
-            if (pendingActionData) {
-                proceedWithSave(pendingActionData.data, pendingActionData.isUpdating);
-            }
-            warningModal.style.display = 'none';
-            pendingActionData = null;
-        });
-
-        // Xử lý Hủy trong Modal Cảnh báo
-        btnCancelWarning.addEventListener('click', function() {
-            warningModal.style.display = 'none';
-            pendingActionData = null;
-        });
-
-        // Xử lý khi ấn nút Xóa bên trong Form
-        btnDelete.addEventListener('click', function() {
-            const currentId = idInput.value.trim();
-            customerToDelete = currentId;
-            deleteModalMessage.innerHTML = `Bạn có chắc chắn muốn xóa khách hàng <strong>"${currentId}"</strong> không? Dữ liệu không thể khôi phục.`;
-            deleteModal.style.display = 'flex';
-        });
-
-        // Xác nhận xóa trong Modal
-        btnConfirmDelete.addEventListener('click', function() {
-            if (customerToDelete) {
-                customers = customers.filter(c => c.customerId.toLowerCase() !== customerToDelete.toLowerCase());
-                saveData();
-                toggleEditMode(false);
-                renderTable();
-            }
-            deleteModal.style.display = 'none';
-            customerToDelete = null;
-        });
-
-        // Hủy xóa trong Modal
-        btnCancelDelete.addEventListener('click', function() {
-            deleteModal.style.display = 'none';
-            customerToDelete = null;
-        });
-
-        // Xử lý Hủy chỉnh sửa
-        btnCancelEdit.addEventListener('click', function() {
-            toggleEditMode(false);
-        });
-
-        // Xử lý tìm kiếm (Reset về trang 1 khi tìm kiếm mới)
-        searchInput.addEventListener('input', () => {
-            currentPage = 1;
-            renderTable();
-        });
-
-        // Lấy danh sách đang hiển thị (đã lọc và sắp xếp)
-        function getFilteredAndSortedData() {
-            const query = searchInput.value.toLowerCase();
-            let filtered = customers.filter(c => 
-                c.customerId.toLowerCase().includes(query) ||
-                c.companyName.toLowerCase().includes(query) ||
-                c.taxId.toLowerCase().includes(query) ||
-                c.contactName.toLowerCase().includes(query) ||
-                c.phone.includes(query)
-            );
-            filtered.sort((a, b) => b.sales - a.sales);
-            return filtered;
-        }
-
-        // Xử lý Xuất Excel
-        btnExportExcel.addEventListener('click', function() {
-            const data = getFilteredAndSortedData();
-            if (data.length === 0) return;
-
-            const exportData = data.map((c, index) => ({
-                "STT": index + 1,
-                "Mã KH": c.customerId,
-                "MST": c.taxId || "",
-                "Tên Công ty": c.companyName || "",
-                "Người liên hệ": c.contactName || "",
-                "Số điện thoại": c.phone || "",
-                "Doanh số KH (VNĐ)": c.sales,
-                "Ghi chú": c.notes || ""
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Doanh_So_Khach_Hang");
-            XLSX.writeFile(wb, "Bang_Xep_Hang_Doanh_So.xlsx");
-        });
-
-        // Xử lý Xuất PDF
-        btnExportPDF.addEventListener('click', function() {
-            const data = getFilteredAndSortedData();
-            if (data.length === 0) return;
-
-            // Tạo một container ẩn để render giao diện bảng xuất ra PDF
-            const container = document.createElement('div');
-            container.style.padding = '20px';
-            container.style.fontFamily = 'Arial, sans-serif';
-            
-            const title = document.createElement('h2');
-            title.innerText = 'Bảng Xếp hạng Doanh số Khách hàng';
-            title.style.textAlign = 'center';
-            title.style.marginBottom = '20px';
-            title.style.color = '#2563eb';
-            container.appendChild(title);
-
-            const table = document.createElement('table');
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
-            table.style.fontSize = '12px';
-            
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: center; background-color: #f8fafc;">STT</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Mã KH</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">MST</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Tên Công ty</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Người LH</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">SĐT</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: right; background-color: #f8fafc;">Doanh số (VNĐ)</th>
-                </tr>
-            `;
-            table.appendChild(thead);
-
-            const tbody = document.createElement('tbody');
-            data.forEach((c, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">${index + 1}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.customerId}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.taxId || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.companyName || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.contactName || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.phone || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: right; color: #10b981; font-weight: bold;">${formatCurrency(c.sales)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            table.appendChild(tbody);
-            container.appendChild(table);
-
-            const opt = {
-                margin:       10,
-                filename:     'Bang_Xep_Hang_Doanh_So.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().set(opt).from(container).save();
-        });
-
-        // Xử lý Modal (Xác nhận ghi đè dữ liệu trùng)
         document.getElementById('btnConfirmModal').addEventListener('click', function() {
             const index = customers.findIndex(c => c.customerId.toLowerCase() === pendingCustomerData.customerId.toLowerCase());
-            if (index !== -1) {
-                customers[index] = pendingCustomerData;
-                saveData(); // Lưu vào Local Storage
-            }
-            modal.style.display = 'none';
-            pendingCustomerData = null;
-            toggleEditMode(false);
-            renderTable();
+            if (index !== -1) { customers[index] = pendingCustomerData; saveData(); }
+            modal.style.display = 'none'; toggleEditMode(false); renderTable();
         });
-
-        document.getElementById('btnCancelModal').addEventListener('click', function() {
-            modal.style.display = 'none';
-            pendingCustomerData = null;
-        });
-
-        // Hiển thị bảng ban đầu
+        document.getElementById('btnCancelModal').addEventListener('click', () => { modal.style.display = 'none'; });
         renderTable();
     </script>
 </body>
