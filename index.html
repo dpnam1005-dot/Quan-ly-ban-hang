@@ -34,7 +34,8 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px; /* Tăng từ 1200px lên 1600px để không gian rộng rãi hơn */
+            width: 98%;
             margin: 0 auto;
         }
 
@@ -58,6 +59,7 @@
         .form-section {
             flex: 1;
             min-width: 300px;
+            max-width: 360px; /* Giới hạn độ rộng của form để nhường chỗ tối đa cho bảng */
             background: var(--card-bg);
             padding: 20px;
             border-radius: 8px;
@@ -66,7 +68,7 @@
         }
 
         .table-section {
-            flex: 2;
+            flex: 1; /* Để bảng chiếm toàn bộ không gian còn lại */
             min-width: 600px;
             background: var(--card-bg);
             padding: 20px;
@@ -206,6 +208,7 @@
 
         table {
             width: 100%;
+            min-width: 1100px; /* Ép bảng có độ rộng tối thiểu, kích hoạt thanh cuộn ngang nếu màn hình nhỏ */
             border-collapse: collapse;
         }
 
@@ -214,6 +217,20 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             font-size: 14px;
+            vertical-align: middle; /* Căn giữa nội dung theo chiều dọc */
+        }
+
+        /* Thêm các class để chống xuống dòng và chia khoảng cách cho bảng */
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        .col-company {
+            min-width: 250px;
+        }
+
+        .col-notes {
+            min-width: 150px;
         }
 
         th {
@@ -387,13 +404,13 @@
                         <thead>
                             <tr>
                                 <th class="text-center">#</th>
-                                <th>Mã KH</th>
-                                <th>MST</th>
-                                <th>Tên Công ty</th>
-                                <th>Người liên hệ</th>
-                                <th>SĐT</th>
-                                <th class="text-right">Doanh số KH</th>
-                                <th>Ghi chú</th>
+                                <th class="nowrap">Mã KH</th>
+                                <th class="nowrap">MST</th>
+                                <th class="col-company">Tên Công ty</th>
+                                <th class="nowrap">Người liên hệ</th>
+                                <th class="nowrap">SĐT</th>
+                                <th class="text-right nowrap">Doanh số KH</th>
+                                <th class="col-notes">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -586,12 +603,12 @@
                 tr.onclick = () => { setFormData(customer); toggleEditMode(true); window.scrollTo({ top: 0, behavior: 'smooth' }); };
                 tr.innerHTML = `
                     <td class="text-center"><strong>${startIndex + index + 1}</strong></td>
-                    <td style="color: var(--primary-color); font-weight: bold;">${customer.customerId}</td>
-                    <td>${customer.taxId || '-'}</td>
+                    <td class="nowrap" style="color: var(--primary-color); font-weight: bold;">${customer.customerId}</td>
+                    <td class="nowrap">${customer.taxId || '-'}</td>
                     <td><strong>${customer.companyName || '-'}</strong></td>
-                    <td>${customer.contactName || '-'}</td>
-                    <td>${customer.phone || '-'}</td>
-                    <td class="text-right money">${formatCurrency(customer.sales)}</td>
+                    <td class="nowrap">${customer.contactName || '-'}</td>
+                    <td class="nowrap">${customer.phone || '-'}</td>
+                    <td class="text-right money nowrap">${formatCurrency(customer.sales)}</td>
                     <td>${customer.notes || '-'}</td>
                 `;
                 tableBody.appendChild(tr);
