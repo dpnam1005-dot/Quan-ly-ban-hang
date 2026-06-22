@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Doanh số Khách hàng</title>
-    <!-- Thêm thư viện xuất Excel (SheetJS) và PDF (html2pdf) -->
+    <!-- Thêm thư viện xuất Excel (SheetJS) và thư viện mới xuất PDF (pdfmake) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
         /* CSS Cơ bản */
         :root {
@@ -708,68 +709,88 @@
             XLSX.writeFile(wb, "Bang_Xep_Hang_Doanh_So.xlsx");
         });
 
-        // Xử lý Xuất PDF
+        // Xử lý Xuất PDF bằng thư viện pdfmake mới (không bị lỗi cắt xén)
         btnExportPDF.addEventListener('click', function() {
             const data = getFilteredAndSortedData();
             if (data.length === 0) return;
 
-            // Tạo một container ẩn để render giao diện bảng xuất ra PDF
-            const container = document.createElement('div');
-            container.style.padding = '20px';
-            container.style.fontFamily = 'Arial, sans-serif';
+            // Khởi tạo bảng cho PDF
+            const tableBody = [];
             
-            const title = document.createElement('h2');
-            title.innerText = 'Bảng Xếp hạng Doanh số Khách hàng';
-            title.style.textAlign = 'center';
-            title.style.marginBottom = '20px';
-            title.style.color = '#2563eb';
-            container.appendChild(title);
+            // Dòng Header
+            tableBody.push([
+                { text: 'STT', style: 'tableHeader', alignment: 'center' },
+                { text: 'Mã KH', style: 'tableHeader' },
+                { text: 'MST', style: 'tableHeader' },
+                { text: 'Tên Công ty', style: 'tableHeader' },
+                { text: 'Người LH', style: 'tableHeader' },
+                { text: 'SĐT', style: 'tableHeader' },
+                { text: 'Doanh số (VNĐ)', style: 'tableHeader', alignment: 'right' },
+                { text: 'Ghi chú', style: 'tableHeader' }
+            ]);
 
-            const table = document.createElement('table');
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
-            table.style.fontSize = '12px';
-            
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: center; background-color: #f8fafc;">STT</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Mã KH</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">MST</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Tên Công ty</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">Người LH</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: left; background-color: #f8fafc;">SĐT</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 8px; text-align: right; background-color: #f8fafc;">Doanh số (VNĐ)</th>
-                </tr>
-            `;
-            table.appendChild(thead);
-
-            const tbody = document.createElement('tbody');
+            // Dữ liệu từng dòng khách hàng
             data.forEach((c, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: center;">${index + 1}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.customerId}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.taxId || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.companyName || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.contactName || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px;">${c.phone || '-'}</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 8px; text-align: right; color: #10b981; font-weight: bold;">${formatCurrency(c.sales)}</td>
-                `;
-                tbody.appendChild(tr);
+                tableBody.push([
+                    { text: (index + 1).toString(), alignment: 'center' },
+                    { text: c.customerId || '-', color: '#2563eb', bold: true },
+                    { text: c.taxId || '-' },
+                    { text: c.companyName || '-', bold: true },
+                    { text: c.contactName || '-' },
+                    { text: c.phone || '-' },
+                    { text: formatCurrency(c.sales), alignment: 'right', color: '#10b981', bold: true },
+                    { text: c.notes || '-' }
+                ]);
             });
-            table.appendChild(tbody);
-            container.appendChild(table);
 
-            const opt = {
-                margin:       10,
-                filename:     'Bang_Xep_Hang_Doanh_So.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            // Định dạng bố cục file PDF
+            const docDefinition = {
+                pageOrientation: 'landscape', // Khổ giấy ngang
+                pageSize: 'A4',
+                content: [
+                    { text: 'Bảng Xếp hạng Doanh số Khách hàng', style: 'header' },
+                    {
+                        table: {
+                            headerRows: 1,
+                            // Tỷ lệ % độ rộng các cột cho vừa vặn tờ giấy A4
+                            widths: ['5%', '13%', '10%', '24%', '12%', '11%', '15%', '10%'],
+                            body: tableBody
+                        },
+                        // Style đường viền và màu nền cho bảng
+                        layout: {
+                            hLineWidth: function (i, node) { return 1; },
+                            vLineWidth: function (i, node) { return 1; },
+                            hLineColor: function (i, node) { return '#e2e8f0'; },
+                            vLineColor: function (i, node) { return '#e2e8f0'; },
+                            paddingLeft: function(i, node) { return 6; },
+                            paddingRight: function(i, node) { return 6; },
+                            paddingTop: function(i, node) { return 8; },
+                            paddingBottom: function(i, node) { return 8; }
+                        }
+                    }
+                ],
+                styles: {
+                    header: {
+                        fontSize: 16,
+                        bold: true,
+                        alignment: 'center',
+                        margin: [0, 0, 0, 15],
+                        color: '#2563eb'
+                    },
+                    tableHeader: {
+                        bold: true,
+                        fontSize: 11,
+                        color: '#475569',
+                        fillColor: '#f8fafc'
+                    }
+                },
+                defaultStyle: {
+                    fontSize: 10
+                }
             };
 
-            html2pdf().set(opt).from(container).save();
+            // Tạo và tải file PDF
+            pdfMake.createPdf(docDefinition).download('Bang_Xep_Hang_Doanh_So.pdf');
         });
 
         renderTable();
