@@ -351,7 +351,7 @@
 
                     <div class="form-group">
                         <label for="sales">Doanh số KH (VNĐ)</label>
-                        <input type="number" id="sales" class="form-control" placeholder="0" min="0">
+                        <input type="text" id="sales" class="form-control" placeholder="0">
                     </div>
 
                     <div class="form-group">
@@ -433,12 +433,25 @@
         </div>
     </div>
 
+    <!-- Modal cảnh báo trùng lặp thông tin khác -->
+    <div id="warningModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: #f59e0b; margin-bottom: 10px;">Cảnh báo trùng lặp</h3>
+            <p id="warningModalMessage"></p>
+            <div class="modal-actions">
+                <button type="button" id="btnCancelWarning" class="btn btn-secondary">Quay lại sửa</button>
+                <button type="button" id="btnConfirmWarning" class="btn btn-primary">Vẫn tiếp tục lưu</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script xử lý logic -->
     <script>
         // Mảng chứa dữ liệu khách hàng (Lấy từ Local Storage nếu có)
         let customers = JSON.parse(localStorage.getItem('customers_data')) || [];
         let isEditing = false;
         let pendingCustomerData = null;
+        let pendingActionData = null; // Biến lưu tạm thao tác đang bị cảnh báo
 
         // Hàm lưu vào Local Storage
         function saveData() {
@@ -466,6 +479,12 @@
         const btnConfirmDelete = document.getElementById('btnConfirmDelete');
         let customerToDelete = null;
 
+        // Elements Modal Cảnh báo trùng lặp mềm
+        const warningModal = document.getElementById('warningModal');
+        const warningModalMessage = document.getElementById('warningModalMessage');
+        const btnCancelWarning = document.getElementById('btnCancelWarning');
+        const btnConfirmWarning = document.getElementById('btnConfirmWarning');
+
         // Elements form
         const idInput = document.getElementById('customerId');
         const taxIdInput = document.getElementById('taxId');
@@ -484,6 +503,14 @@
         const btnExportExcel = document.getElementById('btnExportExcel');
         const btnExportPDF = document.getElementById('btnExportPDF');
 
+        // Xử lý định dạng tiền tệ có dấu phẩy ngay khi gõ vào ô Doanh số
+        salesInput.addEventListener('input', function(e) {
+            // Loại bỏ các ký tự không phải là số
+            let rawValue = this.value.replace(/\D/g, '');
+            // Thêm dấu phẩy ngăn cách phần nghìn
+            this.value = rawValue ? parseInt(rawValue, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
+        });
+
         // Hàm format tiền tệ
         function formatCurrency(amount) {
             return Number(amount).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -497,7 +524,7 @@
                 companyName: companyInput.value.trim(),
                 contactName: contactInput.value.trim(),
                 phone: phoneInput.value.trim(),
-                sales: Number(salesInput.value) || 0,
+                sales: Number(salesInput.value.replace(/,/g, '')) || 0, // Xóa dấu phẩy trước khi chuyển thành số
                 notes: notesInput.value.trim()
             };
         }
@@ -509,7 +536,8 @@
             companyInput.value = data.companyName || '';
             contactInput.value = data.contactName || '';
             phoneInput.value = data.phone || '';
-            salesInput.value = data.sales || '';
+            // Định dạng lại có dấu phẩy khi xem/sửa
+            salesInput.value = data.sales ? data.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
             notesInput.value = data.notes || '';
         }
 
@@ -644,39 +672,95 @@
             renderPagination(filtered.length);
         }
 
+        // Hàm kiểm tra trùng lặp MST, Tên công ty, SĐT
+        function checkSoftDuplicates(data) {
+            let warnings = [];
+            customers.forEach(c => {
+                // Không so sánh với chính nó khi đang update
+                if (c.customerId.toLowerCase() !== data.customerId.toLowerCase()) {
+                    if (data.taxId && c.taxId && c.taxId === data.taxId) {
+                        warnings.push(`- <strong>Mã số thuế</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    }
+                    if (data.companyName && c.companyName && c.companyName.toLowerCase() === data.companyName.toLowerCase()) {
+                        warnings.push(`- <strong>Tên công ty</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    }
+                    if (data.phone && c.phone && c.phone === data.phone) {
+                        warnings.push(`- <strong>Số điện thoại</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    }
+                }
+            });
+            return [...new Set(warnings)]; // Lọc các cảnh báo trùng nhau
+        }
+
+        // Hàm thực thi việc lưu sau khi đã vượt qua (hoặc xác nhận) các cảnh báo
+        function proceedWithSave(data, isUpdating) {
+            if (isUpdating) {
+                const index = customers.findIndex(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
+                if (index !== -1) {
+                    customers[index] = data;
+                    saveData();
+                    toggleEditMode(false);
+                    renderTable();
+                }
+            } else {
+                const exists = customers.find(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
+                if (exists) {
+                    // Nếu trùng mã ID thì hiện hộp thoại hỏi ghi đè
+                    pendingCustomerData = data;
+                    modalMessage.innerHTML = `Mã khách hàng <strong>"${data.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?`;
+                    modal.style.display = 'flex';
+                } else {
+                    // Thêm mới
+                    customers.push(data);
+                    saveData();
+                    toggleEditMode(false);
+                    renderTable();
+                }
+            }
+        }
+
+        // Hàm xử lý chung khi ấn nút Lưu hoặc Cập nhật
+        function handleSaveAction(data, isUpdating) {
+            if (!data.customerId) return;
+            
+            const softWarnings = checkSoftDuplicates(data);
+            if (softWarnings.length > 0) {
+                // Hiện cảnh báo nếu có trùng lặp
+                pendingActionData = { data, isUpdating };
+                warningModalMessage.innerHTML = softWarnings.join('<br>') + `<br><br>Bạn có chắc chắn muốn tiếp tục lưu thông tin này?`;
+                warningModal.style.display = 'flex';
+            } else {
+                // Tiếp tục lưu bình thường
+                proceedWithSave(data, isUpdating);
+            }
+        }
+
         // Xử lý khi ấn nút Lưu Thông Tin (Thêm mới)
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const data = getFormData();
-            if (!data.customerId) return;
-
-            // Kiểm tra trùng lặp
-            const exists = customers.find(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
-            
-            if (exists) {
-                // Hiện modal hỏi có cập nhật không
-                pendingCustomerData = data;
-                modalMessage.innerHTML = `Mã khách hàng <strong>"${data.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?`;
-                modal.style.display = 'flex';
-            } else {
-                // Thêm mới
-                customers.push(data);
-                saveData(); // Lưu vào Local Storage
-                toggleEditMode(false); // Reset form
-                renderTable();
-            }
+            handleSaveAction(data, false);
         });
 
         // Xử lý khi ấn nút Cập nhật (Đang ở chế độ Edit)
         btnUpdate.addEventListener('click', function() {
             const data = getFormData();
-            const index = customers.findIndex(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
-            if (index !== -1) {
-                customers[index] = data;
-                saveData(); // Lưu vào Local Storage
-                toggleEditMode(false);
-                renderTable();
+            handleSaveAction(data, true);
+        });
+
+        // Xử lý nút xác nhận trong Modal Cảnh báo
+        btnConfirmWarning.addEventListener('click', function() {
+            if (pendingActionData) {
+                proceedWithSave(pendingActionData.data, pendingActionData.isUpdating);
             }
+            warningModal.style.display = 'none';
+            pendingActionData = null;
+        });
+
+        // Xử lý Hủy trong Modal Cảnh báo
+        btnCancelWarning.addEventListener('click', function() {
+            warningModal.style.display = 'none';
+            pendingActionData = null;
         });
 
         // Xử lý khi ấn nút Xóa bên trong Form
