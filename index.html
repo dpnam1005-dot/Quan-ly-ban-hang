@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Doanh số Khách hàng</title>
-    <!-- Thêm thư viện xuất Excel (SheetJS) và thư viện mới xuất PDF (pdfmake) -->
+    <!-- Thêm thư viện xuất Excel (SheetJS) và thư viện xuất PDF (pdfmake) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
@@ -35,7 +35,7 @@
         }
 
         .container {
-            max-width: 1600px; /* Tăng từ 1200px lên 1600px để không gian rộng rãi hơn */
+            max-width: 1600px;
             width: 98%;
             margin: 0 auto;
         }
@@ -60,7 +60,7 @@
         .form-section {
             flex: 1;
             min-width: 300px;
-            max-width: 360px; /* Giới hạn độ rộng của form để nhường chỗ tối đa cho bảng */
+            max-width: 360px;
             background: var(--card-bg);
             padding: 20px;
             border-radius: 8px;
@@ -69,7 +69,7 @@
         }
 
         .table-section {
-            flex: 1; /* Để bảng chiếm toàn bộ không gian còn lại */
+            flex: 1;
             min-width: 600px;
             background: var(--card-bg);
             padding: 20px;
@@ -154,27 +154,12 @@
         }
 
         /* Styles cho nút xuất file */
-        .btn-export-excel {
-            background-color: #10b981;
-            color: white;
-        }
-        .btn-export-excel:hover {
-            background-color: #059669;
-        }
-        .btn-import-excel {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .btn-import-excel:hover {
-            background-color: #2563eb;
-        }
-        .btn-export-pdf {
-            background-color: #f59e0b;
-            color: white;
-        }
-        .btn-export-pdf:hover {
-            background-color: #d97706;
-        }
+        .btn-export-excel { background-color: #10b981; color: white; }
+        .btn-export-excel:hover { background-color: #059669; }
+        .btn-import-excel { background-color: #3b82f6; color: white; }
+        .btn-import-excel:hover { background-color: #2563eb; }
+        .btn-export-pdf { background-color: #f59e0b; color: white; }
+        .btn-export-pdf:hover { background-color: #d97706; }
 
         .btn-sm {
             padding: 6px 10px;
@@ -217,7 +202,7 @@
 
         table {
             width: 100%;
-            min-width: 1100px; /* Ép bảng có độ rộng tối thiểu, kích hoạt thanh cuộn ngang nếu màn hình nhỏ */
+            min-width: 1100px;
             border-collapse: collapse;
         }
 
@@ -226,21 +211,12 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             font-size: 14px;
-            vertical-align: middle; /* Căn giữa nội dung theo chiều dọc */
+            vertical-align: middle;
         }
 
-        /* Thêm các class để chống xuống dòng và chia khoảng cách cho bảng */
-        .nowrap {
-            white-space: nowrap;
-        }
-
-        .col-company {
-            min-width: 250px;
-        }
-
-        .col-notes {
-            min-width: 150px;
-        }
+        .nowrap { white-space: nowrap; }
+        .col-company { min-width: 250px; }
+        .col-notes { min-width: 150px; }
 
         th {
             background-color: #f8fafc;
@@ -252,20 +228,15 @@
             cursor: pointer;
         }
 
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
 
         .money {
             color: #10b981;
             font-weight: bold;
         }
 
-        /* Phân trang (Pagination) Styles */
+        /* Pagination Styles */
         .pagination-container {
             display: flex;
             justify-content: center;
@@ -365,6 +336,18 @@
                         <input type="text" id="companyName" class="form-control" placeholder="Tên công ty...">
                     </div>
 
+                    <div class="form-group">
+                        <label for="classification">Phân loại khách hàng</label>
+                        <select id="classification" class="form-control">
+                            <option value="">-- Chưa phân loại --</option>
+                            <option value="Khách mới">Khách mới (Xanh dương)</option>
+                            <option value="Khách đang mua">Khách đang mua (Cam)</option>
+                            <option value="Chưa liên hệ được">Chưa liên hệ được (Xanh lá)</option>
+                            <option value="Chưa phản hồi">Chưa phản hồi (Đỏ)</option>
+                            <option value="Không phản hồi">Không phản hồi (Vàng)</option>
+                        </select>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="contactName">Người liên hệ</label>
@@ -376,7 +359,6 @@
                         </div>
                     </div>
 
-                    <!-- Doanh số & Cộng thêm doanh số -->
                     <div class="form-row">
                         <div class="form-group">
                             <label id="salesLabel" for="sales">Doanh số KH (VNĐ)</label>
@@ -422,7 +404,19 @@
                         <thead>
                             <tr>
                                 <th class="text-center">#</th>
-                                <th class="nowrap">Mã KH</th>
+                                <th class="nowrap">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span>Mã KH</span>
+                                        <select id="filterClassification" style="padding: 2px 4px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 12px; font-weight: normal; background: #fff; cursor: pointer; color: var(--text-main); width: auto; max-width: 130px;">
+                                            <option value="">Tất cả</option>
+                                            <option value="Khách mới">Khách mới</option>
+                                            <option value="Khách đang mua">Khách đang mua</option>
+                                            <option value="Chưa liên hệ được">Chưa liên hệ được</option>
+                                            <option value="Chưa phản hồi">Chưa phản hồi</option>
+                                            <option value="Không phản hồi">Không phản hồi</option>
+                                        </select>
+                                    </div>
+                                </th>
                                 <th class="nowrap">MST</th>
                                 <th class="col-company">Tên Công ty</th>
                                 <th class="nowrap">Người liên hệ</th>
@@ -490,30 +484,44 @@
     </div>
 
     <script>
-        let customers = JSON.parse(localStorage.getItem('customers_data')) || [];
+        let customers = [];
+        try {
+            customers = JSON.parse(localStorage.getItem('customers_data')) || [];
+        } catch(e) {
+            customers = [];
+        }
+
         let isEditing = false;
         let pendingCustomerData = null;
         let pendingActionData = null;
-        let pendingNotification = null; // Biến lưu tạm dữ liệu của Pop-up thông báo
+        let pendingNotification = null;
 
         function saveData() {
-            localStorage.setItem('customers_data', JSON.stringify(customers));
+            try {
+                localStorage.setItem('customers_data', JSON.stringify(customers));
+            } catch (error) {
+                console.error("Lỗi khi lưu dữ liệu:", error);
+                alert("Không thể lưu dữ liệu! Vui lòng kiểm tra dung lượng trình duyệt.");
+            }
         }
 
         let currentPage = 1;
         const itemsPerPage = 10;
 
+        // Tự động gom toàn bộ DOM elements lên trên cùng để tránh lỗi khởi tạo (ReferenceError)
         const form = document.getElementById('customerForm');
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
         const paginationContainer = document.getElementById('pagination');
+        const filterClassification = document.getElementById('filterClassification');
+        
         const modal = document.getElementById('duplicateModal');
         const modalMessage = document.getElementById('modalMessage');
         const deleteModal = document.getElementById('deleteModal');
         const deleteModalMessage = document.getElementById('deleteModalMessage');
         const btnCancelDelete = document.getElementById('btnCancelDelete');
         const btnConfirmDelete = document.getElementById('btnConfirmDelete');
-        let customerToDelete = null;
+        
         const warningModal = document.getElementById('warningModal');
         const warningModalMessage = document.getElementById('warningModalMessage');
         const btnCancelWarning = document.getElementById('btnCancelWarning');
@@ -527,10 +535,10 @@
         const idInput = document.getElementById('customerId');
         const taxIdInput = document.getElementById('taxId');
         const companyInput = document.getElementById('companyName');
+        const classificationInput = document.getElementById('classification');
         const contactInput = document.getElementById('contactName');
         const phoneInput = document.getElementById('phone');
         
-        // Element Doanh số
         const salesLabel = document.getElementById('salesLabel');
         const salesInput = document.getElementById('sales');
         const addSalesContainer = document.getElementById('addSalesContainer');
@@ -542,36 +550,38 @@
         const btnCancelEdit = document.getElementById('btnCancelEdit');
         const btnUpdate = document.getElementById('btnUpdate');
         const btnDelete = document.getElementById('btnDelete');
+        
         const formTitle = document.getElementById('formTitle');
         const fileInputExcel = document.getElementById('fileInputExcel');
         const btnImportExcel = document.getElementById('btnImportExcel');
         const btnExportExcel = document.getElementById('btnExportExcel');
         const btnExportPDF = document.getElementById('btnExportPDF');
 
+        let customerToDelete = null;
+
         // Định dạng dấu phẩy tự động và đổi màu khi nhập số
         function formatInputWithCommas(e) {
             let isNegative = this.value.startsWith('-');
-            let rawValue = this.value.replace(/\D/g, ''); // Loại bỏ tất cả trừ số
+            let rawValue = this.value.replace(/\D/g, ''); 
             let formatted = rawValue ? parseInt(rawValue, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
             
             if (isNegative && formatted) {
                 this.value = '-' + formatted;
             } else if (isNegative && !formatted) {
-                this.value = '-'; // Trạng thái đang gõ dở dấu trừ
+                this.value = '-'; 
             } else {
                 this.value = formatted;
             }
 
-            // Đổi màu viền và chữ cho ô cập nhật doanh số (+/-)
             if (this.id === 'addSales') {
                 if (isNegative && formatted) {
-                    this.style.borderColor = '#ef4444'; // Viền đỏ
-                    this.style.color = '#ef4444';       // Chữ đỏ
+                    this.style.borderColor = '#ef4444';
+                    this.style.color = '#ef4444';
                 } else if (!isNegative && formatted) {
-                    this.style.borderColor = '#10b981'; // Viền xanh lá
-                    this.style.color = '#10b981';       // Chữ xanh lá
+                    this.style.borderColor = '#10b981';
+                    this.style.color = '#10b981';
                 } else {
-                    this.style.borderColor = 'var(--border-color)'; // Về mặc định
+                    this.style.borderColor = 'var(--border-color)';
                     this.style.color = 'var(--text-main)';
                 }
             }
@@ -584,33 +594,44 @@
             return Number(amount).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         }
 
+        const classificationColors = {
+            "Khách mới": "#3b82f6",      // Xanh dương
+            "Khách đang mua": "#FFA500", // Cam
+            "Chưa liên hệ được": "#10b981",  // Xanh lá
+            "Chưa phản hồi": "#eab308",       // Vàng
+            "Không phản hồi": "#ef4444"       // Đỏ
+        };
+
         function getFormData() {
-            let parsedSales = Number(salesInput.value.replace(/,/g, ''));
-            // Hỗ trợ trường hợp ô doanh số chính là số âm nếu người dùng trực tiếp sửa
+            let parsedSales = Number(salesInput.value.replace(/[,.]/g, ''));
             if (isNaN(parsedSales)) parsedSales = 0;
 
             return {
-                customerId: idInput.value.trim(),
-                taxId: taxIdInput.value.trim(),
-                companyName: companyInput.value.trim(),
-                contactName: contactInput.value.trim(),
-                phone: phoneInput.value.trim(),
+                customerId: idInput ? idInput.value.trim() : '',
+                taxId: taxIdInput ? taxIdInput.value.trim() : '',
+                companyName: companyInput ? companyInput.value.trim() : '',
+                classification: classificationInput ? classificationInput.value : '',
+                contactName: contactInput ? contactInput.value.trim() : '',
+                phone: phoneInput ? phoneInput.value.trim() : '',
                 sales: parsedSales,
-                notes: notesInput.value.trim()
+                notes: notesInput ? notesInput.value.trim() : ''
             };
         }
 
         function setFormData(data) {
-            idInput.value = data.customerId || '';
-            taxIdInput.value = data.taxId || '';
-            companyInput.value = data.companyName || '';
-            contactInput.value = data.contactName || '';
-            phoneInput.value = data.phone || '';
-            salesInput.value = data.sales || data.sales === 0 ? data.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
-            notesInput.value = data.notes || '';
-            addSalesInput.value = ''; // Luôn reset ô cộng thêm khi đổ dữ liệu
-            addSalesInput.style.borderColor = 'var(--border-color)'; // Reset màu sắc
-            addSalesInput.style.color = 'var(--text-main)';
+            if (idInput) idInput.value = data.customerId || '';
+            if (taxIdInput) taxIdInput.value = data.taxId || '';
+            if (companyInput) companyInput.value = data.companyName || '';
+            if (classificationInput) classificationInput.value = data.classification || '';
+            if (contactInput) contactInput.value = data.contactName || '';
+            if (phoneInput) phoneInput.value = data.phone || '';
+            if (salesInput) salesInput.value = data.sales || data.sales === 0 ? data.sales.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
+            if (notesInput) notesInput.value = data.notes || '';
+            if (addSalesInput) {
+                addSalesInput.value = ''; 
+                addSalesInput.style.borderColor = 'var(--border-color)';
+                addSalesInput.style.color = 'var(--text-main)';
+            }
         }
 
         function toggleEditMode(editing) {
@@ -622,30 +643,26 @@
                 idInput.readOnly = true;
                 idInput.style.backgroundColor = '#f1f5f9';
                 
-                // Khóa ô doanh số gốc không cho sửa trực tiếp
                 salesInput.readOnly = true;
                 salesInput.style.backgroundColor = '#f1f5f9';
                 
-                // Hiển thị ô cộng thêm doanh số
                 addSalesContainer.style.display = 'block';
                 salesLabel.innerText = "Doanh số gốc (VNĐ)";
                 addSalesInput.value = '';
                 addSalesInput.style.borderColor = 'var(--border-color)';
                 addSalesInput.style.color = 'var(--text-main)';
             } else {
-                formTitle.innerText = "Thông tin Khách hàng";
+                formTitle.innerText = "Thông hiện Khách hàng";
                 btnSubmit.style.display = 'block';
                 editActions.style.display = 'none';
                 idInput.readOnly = false;
                 idInput.style.backgroundColor = '#fff';
                 
-                // Mở khóa ô doanh số khi thêm mới
                 salesInput.readOnly = false;
                 salesInput.style.backgroundColor = '#fff';
                 
                 setFormData({});
                 
-                // Ẩn ô cộng thêm doanh số
                 addSalesContainer.style.display = 'none';
                 salesLabel.innerText = "Doanh số KH (VNĐ)";
                 addSalesInput.value = '';
@@ -679,18 +696,27 @@
 
         function renderTable() {
             const query = searchInput.value.toLowerCase();
-            let filtered = customers.filter(c => 
-                c.customerId.toLowerCase().includes(query) ||
-                c.companyName.toLowerCase().includes(query) ||
-                c.taxId.toLowerCase().includes(query) ||
-                c.contactName.toLowerCase().includes(query) ||
-                c.phone.includes(query)
-            );
+            const filterClassVal = filterClassification ? filterClassification.value : '';
+
+            let filtered = customers.filter(c => {
+                const matchSearch = String(c.customerId || '').toLowerCase().includes(query) ||
+                    (c.companyName && String(c.companyName).toLowerCase().includes(query)) ||
+                    (c.taxId && String(c.taxId).toLowerCase().includes(query)) ||
+                    (c.contactName && String(c.contactName).toLowerCase().includes(query)) ||
+                    (c.phone && String(c.phone).includes(query)) ||
+                    (c.classification && String(c.classification).toLowerCase().includes(query));
+                
+                const matchClass = filterClassVal === '' || c.classification === filterClassVal;
+                
+                return matchSearch && matchClass;
+            });
+            
             filtered.sort((a, b) => b.sales - a.sales);
             const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
             if (currentPage > totalPages) currentPage = totalPages;
             const startIndex = (currentPage - 1) * itemsPerPage;
             const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+            
             tableBody.innerHTML = '';
             if (paginatedItems.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #94a3b8; padding: 30px;">Không có dữ liệu.</td></tr>`;
@@ -701,12 +727,13 @@
                 const tr = document.createElement('tr');
                 tr.onclick = () => { setFormData(customer); toggleEditMode(true); window.scrollTo({ top: 0, behavior: 'smooth' }); };
                 
-                // Set color appropriately based on positive or negative sales
                 let salesColor = customer.sales >= 0 ? '#10b981' : '#ef4444';
+                let maKhColor = (customer.classification && classificationColors[customer.classification]) ? classificationColors[customer.classification] : 'var(--primary-color)';
+                let maKhTitle = customer.classification ? `Phân loại: ${customer.classification}` : 'Chưa phân loại';
                 
                 tr.innerHTML = `
                     <td class="text-center"><strong>${startIndex + index + 1}</strong></td>
-                    <td class="nowrap" style="color: var(--primary-color); font-weight: bold;">${customer.customerId}</td>
+                    <td class="nowrap" style="color: ${maKhColor}; font-weight: bold;" title="${maKhTitle}">${customer.customerId}</td>
                     <td class="nowrap">${customer.taxId || '-'}</td>
                     <td><strong>${customer.companyName || '-'}</strong></td>
                     <td class="nowrap">${customer.contactName || '-'}</td>
@@ -722,10 +749,10 @@
         function checkSoftDuplicates(data) {
             let warnings = [];
             customers.forEach(c => {
-                if (c.customerId.toLowerCase() !== data.customerId.toLowerCase()) {
-                    if (data.taxId && c.taxId && c.taxId === data.taxId) warnings.push(`- <strong>Mã số thuế</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
-                    if (data.companyName && c.companyName && c.companyName.toLowerCase() === data.companyName.toLowerCase()) warnings.push(`- <strong>Tên công ty</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
-                    if (data.phone && c.phone && c.phone === data.phone) warnings.push(`- <strong>Số điện thoại</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                if (String(c.customerId || '').toLowerCase() !== String(data.customerId || '').toLowerCase()) {
+                    if (data.taxId && c.taxId && String(c.taxId) === String(data.taxId)) warnings.push(`- <strong>Mã số thuế</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    if (data.companyName && c.companyName && String(c.companyName).toLowerCase() === String(data.companyName).toLowerCase()) warnings.push(`- <strong>Tên công ty</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
+                    if (data.phone && c.phone && String(c.phone) === String(data.phone)) warnings.push(`- <strong>Số điện thoại</strong> trùng với khách hàng <span style="color: var(--primary-color)">${c.customerId}</span>`);
                 }
             });
             return [...new Set(warnings)];
@@ -733,10 +760,10 @@
 
         function proceedWithSave(data, isUpdating) {
             if (isUpdating) {
-                const index = customers.findIndex(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
+                const index = customers.findIndex(c => String(c.customerId || '').toLowerCase() === String(data.customerId || '').toLowerCase());
                 if (index !== -1) { customers[index] = data; saveData(); toggleEditMode(false); renderTable(); }
             } else {
-                const exists = customers.find(c => c.customerId.toLowerCase() === data.customerId.toLowerCase());
+                const exists = customers.find(c => String(c.customerId || '').toLowerCase() === String(data.customerId || '').toLowerCase());
                 if (exists) {
                     pendingCustomerData = data;
                     modalMessage.innerHTML = `Mã khách hàng <strong>"${data.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?`;
@@ -746,13 +773,12 @@
                 }
             }
 
-            // Gọi Pop-up thông báo thành công (nếu có cập nhật doanh số)
             if (pendingNotification) {
                 notificationTitle.innerText = pendingNotification.title;
                 notificationTitle.style.color = pendingNotification.titleColor;
                 notificationMessage.innerHTML = pendingNotification.message;
                 notificationModal.style.display = 'flex';
-                pendingNotification = null; // Reset lại
+                pendingNotification = null; 
             }
         }
 
@@ -768,27 +794,29 @@
 
         form.addEventListener('submit', function(e) { 
             e.preventDefault(); 
-            handleSaveAction(getFormData(), false); 
+            // Cập nhật thông minh: Nếu đang sửa KH mà người dùng ấn 'Enter' -> tự hiểu là thao tác Cập Nhật chứ không phải Thêm Mới.
+            if (isEditing) {
+                btnUpdate.click();
+            } else {
+                handleSaveAction(getFormData(), false); 
+            }
         });
 
-        // Xử lý Cập nhật (bao gồm cộng/trừ dồn doanh số nếu có)
         btnUpdate.addEventListener('click', function() { 
             const data = getFormData();
-            
-            // Lấy giá trị từ ô "Cập nhật doanh số (+/-)"
-            const addedSalesStr = addSalesInput.value.replace(/,/g, '');
+            const addedSalesStr = addSalesInput.value.replace(/[,.]/g, '');
             
             if (addedSalesStr !== '-' && addedSalesStr !== '') {
                 const addedSales = Number(addedSalesStr) || 0;
                 if (addedSales > 0) {
-                    data.sales += addedSales; // Cộng dồn
+                    data.sales += addedSales; 
                     pendingNotification = {
                         title: 'Thành công!',
                         titleColor: '#10b981',
                         message: `Doanh số gốc của khách hàng <strong>${data.customerId}</strong> đã được <br><strong style="color: #10b981; font-size: 18px;">Tăng thêm ${formatCurrency(addedSales)}</strong>`
                     };
                 } else if (addedSales < 0) {
-                    data.sales += addedSales; // Trừ dồn (hệ thống cho phép âm)
+                    data.sales += addedSales; 
                     pendingNotification = {
                         title: 'Thành công!',
                         titleColor: '#ef4444',
@@ -804,46 +832,56 @@
         btnConfirmWarning.addEventListener('click', function() { if (pendingActionData) proceedWithSave(pendingActionData.data, pendingActionData.isUpdating); warningModal.style.display = 'none'; pendingActionData = null; });
         btnCancelWarning.addEventListener('click', function() { warningModal.style.display = 'none'; pendingActionData = null; });
         btnDelete.addEventListener('click', function() { const id = idInput.value.trim(); customerToDelete = id; deleteModalMessage.innerHTML = `Bạn có chắc chắn muốn xóa khách hàng <strong>"${id}"</strong> không?`; deleteModal.style.display = 'flex'; });
-        btnConfirmDelete.addEventListener('click', function() { if (customerToDelete) { customers = customers.filter(c => c.customerId.toLowerCase() !== customerToDelete.toLowerCase()); saveData(); toggleEditMode(false); renderTable(); } deleteModal.style.display = 'none'; });
+        btnConfirmDelete.addEventListener('click', function() { if (customerToDelete) { customers = customers.filter(c => String(c.customerId).toLowerCase() !== String(customerToDelete).toLowerCase()); saveData(); toggleEditMode(false); renderTable(); } deleteModal.style.display = 'none'; });
         btnCancelDelete.addEventListener('click', function() { deleteModal.style.display = 'none'; });
         btnCancelEdit.addEventListener('click', function() { toggleEditMode(false); });
+        
+        // Sự kiện lọc
         searchInput.addEventListener('input', () => { currentPage = 1; renderTable(); });
+        if (filterClassification) {
+            filterClassification.addEventListener('change', () => { currentPage = 1; renderTable(); });
+        }
 
         document.getElementById('btnConfirmModal').addEventListener('click', function() {
-            const index = customers.findIndex(c => c.customerId.toLowerCase() === pendingCustomerData.customerId.toLowerCase());
+            const index = customers.findIndex(c => String(c.customerId).toLowerCase() === String(pendingCustomerData.customerId).toLowerCase());
             if (index !== -1) { customers[index] = pendingCustomerData; saveData(); }
             modal.style.display = 'none'; toggleEditMode(false); renderTable();
         });
         document.getElementById('btnCancelModal').addEventListener('click', () => { modal.style.display = 'none'; });
         
-        // --- CHỨC NĂNG XUẤT FILE ---
-        // Lấy danh sách đang hiển thị (đã lọc theo tìm kiếm và sắp xếp)
         function getFilteredAndSortedData() {
             const query = searchInput.value.toLowerCase();
-            let filtered = customers.filter(c => 
-                c.customerId.toLowerCase().includes(query) ||
-                (c.companyName && c.companyName.toLowerCase().includes(query)) ||
-                (c.taxId && c.taxId.toLowerCase().includes(query)) ||
-                (c.contactName && c.contactName.toLowerCase().includes(query)) ||
-                (c.phone && c.phone.includes(query))
-            );
+            const filterClassVal = filterClassification ? filterClassification.value : '';
+
+            let filtered = customers.filter(c => {
+                const matchSearch = String(c.customerId || '').toLowerCase().includes(query) ||
+                    (c.companyName && String(c.companyName).toLowerCase().includes(query)) ||
+                    (c.taxId && String(c.taxId).toLowerCase().includes(query)) ||
+                    (c.contactName && String(c.contactName).toLowerCase().includes(query)) ||
+                    (c.phone && String(c.phone).includes(query)) ||
+                    (c.classification && String(c.classification).toLowerCase().includes(query));
+                
+                const matchClass = filterClassVal === '' || c.classification === filterClassVal;
+                
+                return matchSearch && matchClass;
+            });
             filtered.sort((a, b) => b.sales - a.sales);
             return filtered;
         }
 
-        // Xử lý Xuất Excel
         btnExportExcel.addEventListener('click', function() {
             const data = getFilteredAndSortedData();
             if (data.length === 0) return;
 
             const exportData = data.map((c, index) => ({
                 "STT": index + 1,
-                "Mã KH": c.customerId,
+                "Mã KH": c.customerId || "",
+                "Phân loại": c.classification || "",
                 "MST": c.taxId || "",
                 "Tên Công ty": c.companyName || "",
                 "Người liên hệ": c.contactName || "",
                 "Số điện thoại": c.phone || "",
-                "Doanh số KH (VNĐ)": c.sales,
+                "Doanh số KH (VNĐ)": c.sales || 0,
                 "Ghi chú": c.notes || ""
             }));
 
@@ -853,15 +891,12 @@
             XLSX.writeFile(wb, "Bang_Xep_Hang_Doanh_So.xlsx");
         });
 
-        // Xử lý Xuất PDF bằng thư viện pdfmake mới (không bị lỗi cắt xén)
         btnExportPDF.addEventListener('click', function() {
             const data = getFilteredAndSortedData();
             if (data.length === 0) return;
 
-            // Khởi tạo bảng cho PDF
             const tableBody = [];
             
-            // Dòng Header
             tableBody.push([
                 { text: 'STT', style: 'tableHeader', alignment: 'center' },
                 { text: 'Mã KH', style: 'tableHeader' },
@@ -873,35 +908,33 @@
                 { text: 'Ghi chú', style: 'tableHeader' }
             ]);
 
-            // Dữ liệu từng dòng khách hàng
             data.forEach((c, index) => {
                 let salesColor = c.sales >= 0 ? '#10b981' : '#ef4444';
+                let maKhColor = (c.classification && classificationColors[c.classification]) ? classificationColors[c.classification] : '#2563eb';
+                
                 tableBody.push([
                     { text: (index + 1).toString(), alignment: 'center' },
-                    { text: c.customerId || '-', color: '#2563eb', bold: true },
+                    { text: c.customerId || '-', color: maKhColor, bold: true },
                     { text: c.taxId || '-' },
                     { text: c.companyName || '-', bold: true },
                     { text: c.contactName || '-' },
                     { text: c.phone || '-' },
-                    { text: formatCurrency(c.sales), alignment: 'right', color: salesColor, bold: true },
+                    { text: formatCurrency(c.sales || 0), alignment: 'right', color: salesColor, bold: true },
                     { text: c.notes || '-' }
                 ]);
             });
 
-            // Định dạng bố cục file PDF
             const docDefinition = {
-                pageOrientation: 'landscape', // Khổ giấy ngang
+                pageOrientation: 'landscape', 
                 pageSize: 'A4',
                 content: [
                     { text: 'Bảng Xếp hạng Doanh số Khách hàng', style: 'header' },
                     {
                         table: {
                             headerRows: 1,
-                            // Tỷ lệ % độ rộng các cột cho vừa vặn tờ giấy A4
                             widths: ['5%', '13%', '10%', '24%', '12%', '11%', '15%', '10%'],
                             body: tableBody
                         },
-                        // Style đường viền và màu nền cho bảng
                         layout: {
                             hLineWidth: function (i, node) { return 1; },
                             vLineWidth: function (i, node) { return 1; },
@@ -934,12 +967,11 @@
                 }
             };
 
-            // Tạo và tải file PDF
             pdfMake.createPdf(docDefinition).download('Bang_Xep_Hang_Doanh_So.pdf');
         });
 
-        // --- CHỨC NĂNG NHẬP FILE EXCEL ---
         btnImportExcel.addEventListener('click', function() {
+            fileInputExcel.value = null; // Reset lại input để chọn cùng 1 file nhiều lần vẫn nhận
             fileInputExcel.click();
         });
 
@@ -954,34 +986,44 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // Thêm defval: "" để tránh lỗi Undefined nếu ô trống
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" }); 
 
                     let importedCount = 0;
                     let updatedCount = 0;
 
                     jsonData.forEach(row => {
-                        // Linh hoạt nhận diện tên cột từ file (bao gồm các cột khi xuất ra)
-                        const custId = (row["Mã KH"] || row["customerId"] || "").toString().trim();
-                        if (!custId) return; // Bỏ qua dòng không có Mã KH
+                        // Chuẩn hóa toàn bộ key của Object về chữ thường và xóa khoảng trắng 
+                        // -> Tránh lỗi do người dùng gõ sai tên cột (VD: " Mã KH ", "MÃ KH")
+                        const normRow = {};
+                        for (let k in row) {
+                            if (row.hasOwnProperty(k)) {
+                                normRow[k.trim().toLowerCase()] = row[k];
+                            }
+                        }
 
-                        // Xử lý cột doanh số: loại bỏ dấu phẩy nếu file Excel lưu dạng chuỗi
-                        let salesVal = row["Doanh số KH (VNĐ)"] || row["Doanh số (VNĐ)"] || row["Doanh số"] || row["sales"] || 0;
+                        // Tìm linh hoạt các tên cột tương đương
+                        const custId = String(normRow["mã kh"] || normRow["mã khách hàng"] || normRow["customerid"] || normRow["mã"] || "").trim();
+                        if (!custId) return; // Nếu hoàn toàn không có ID, bỏ qua dòng đó
+
+                        let salesVal = normRow["doanh số kh (vnđ)"] || normRow["doanh số (vnđ)"] || normRow["doanh số"] || normRow["sales"] || 0;
                         if (typeof salesVal === 'string') {
-                            salesVal = Number(salesVal.replace(/,/g, '').replace(/\./g, '')) || 0;
+                            salesVal = Number(salesVal.replace(/[,.]/g, '')) || 0;
                         }
 
                         const newCustomer = {
                             customerId: custId,
-                            taxId: (row["MST"] || row["Mã số thuế"] || row["taxId"] || "").toString().trim(),
-                            companyName: (row["Tên Công ty"] || row["companyName"] || "").toString().trim(),
-                            contactName: (row["Người liên hệ"] || row["Người LH"] || row["contactName"] || "").toString().trim(),
-                            phone: (row["Số điện thoại"] || row["SĐT"] || row["phone"] || "").toString().trim(),
+                            taxId: String(normRow["mst"] || normRow["mã số thuế"] || normRow["taxid"] || "").trim(),
+                            companyName: String(normRow["tên công ty"] || normRow["công ty"] || normRow["companyname"] || "").trim(),
+                            classification: String(normRow["phân loại"] || normRow["phân loại khách hàng"] || normRow["classification"] || "").trim(),
+                            contactName: String(normRow["người liên hệ"] || normRow["người lh"] || normRow["contactname"] || "").trim(),
+                            phone: String(normRow["số điện thoại"] || normRow["sđt"] || normRow["phone"] || "").trim(),
                             sales: Number(salesVal) || 0,
-                            notes: (row["Ghi chú"] || row["notes"] || "").toString().trim()
+                            notes: String(normRow["ghi chú"] || normRow["notes"] || "").trim()
                         };
 
-                        // Cập nhật nếu trùng ID, thêm mới nếu chưa có
-                        const existingIndex = customers.findIndex(c => c.customerId.toLowerCase() === custId.toLowerCase());
+                        const existingIndex = customers.findIndex(c => String(c.customerId).toLowerCase() === custId.toLowerCase());
                         if (existingIndex !== -1) {
                             customers[existingIndex] = newCustomer;
                             updatedCount++;
@@ -991,30 +1033,35 @@
                         }
                     });
 
-                    saveData();
-                    currentPage = 1;
-                    renderTable();
+                    // Kiểm tra xem có dòng nào được lấy ra không
+                    if (importedCount === 0 && updatedCount === 0) {
+                        notificationTitle.innerText = "Lỗi Cấu Trúc File";
+                        notificationTitle.style.color = "#ef4444";
+                        notificationMessage.innerHTML = "Không thể đọc dữ liệu! Hãy đảm bảo file Excel của bạn có chứa cột tiêu đề <strong>Mã KH</strong>.";
+                        notificationModal.style.display = 'flex';
+                    } else {
+                        saveData();
+                        currentPage = 1;
+                        renderTable();
 
-                    // Hiển thị thông báo thành công
-                    notificationTitle.innerText = "Nhập Excel Thành Công!";
-                    notificationTitle.style.color = "#10b981";
-                    notificationMessage.innerHTML = `Đã thêm mới: <strong>${importedCount}</strong> khách hàng.<br>Đã cập nhật: <strong>${updatedCount}</strong> khách hàng (do trùng mã).`;
-                    notificationModal.style.display = 'flex';
+                        notificationTitle.innerText = "Nhập Excel Thành Công!";
+                        notificationTitle.style.color = "#10b981";
+                        notificationMessage.innerHTML = `Đã thêm mới: <strong>${importedCount}</strong> khách hàng.<br>Đã cập nhật: <strong>${updatedCount}</strong> khách hàng (do trùng mã).`;
+                        notificationModal.style.display = 'flex';
+                    }
 
                 } catch (error) {
                     console.error("Lỗi đọc file Excel:", error);
                     notificationTitle.innerText = "Lỗi Nhập File";
                     notificationTitle.style.color = "#ef4444";
-                    notificationMessage.innerHTML = "Không thể đọc file Excel. Vui lòng kiểm tra lại định dạng file!";
+                    notificationMessage.innerHTML = "Không thể đọc file Excel. Vui lòng kiểm tra lại file của bạn (nên dùng định dạng .xlsx hoặc .csv)!";
                     notificationModal.style.display = 'flex';
                 }
-                
-                // Reset input file để chọn lại được file cũ nếu muốn
-                fileInputExcel.value = '';
             };
             reader.readAsArrayBuffer(file);
         });
 
+        // Khởi động giao diện bảng lần đầu
         renderTable();
     </script>
 </body>
