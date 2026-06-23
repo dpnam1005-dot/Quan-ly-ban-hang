@@ -341,10 +341,10 @@
                         <select id="classification" class="form-control">
                             <option value="">-- Chưa phân loại --</option>
                             <option value="Khách mới">Khách mới (Xanh dương)</option>
-                            <option value="Khách đang mua">Khách đang mua (Cam)</option>
+                            <option value="Thường xuyên">Thường xuyên (Cam)</option>
                             <option value="Chưa liên hệ được">Chưa liên hệ được (Xanh lá)</option>
-                            <option value="Chưa phản hồi">Chưa phản hồi (Đỏ)</option>
-                            <option value="Không phản hồi">Không phản hồi (Vàng)</option>
+                            <option value="Không thường xuyên">Không thường xuyên (Đỏ)</option>
+                            <option value="không nhu cầu">không nhu cầu (Vàng)</option>
                         </select>
                     </div>
 
@@ -410,10 +410,10 @@
                                         <select id="filterClassification" style="padding: 2px 4px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 12px; font-weight: normal; background: #fff; cursor: pointer; color: var(--text-main); width: auto; max-width: 130px;">
                                             <option value="">Tất cả</option>
                                             <option value="Khách mới">Khách mới</option>
-                                            <option value="Khách đang mua">Khách đang mua</option>
+                                            <option value="Thường xuyên">Thường xuyên</option>
                                             <option value="Chưa liên hệ được">Chưa liên hệ được</option>
-                                            <option value="Chưa phản hồi">Chưa phản hồi</option>
-                                            <option value="Không phản hồi">Không phản hồi</option>
+                                            <option value="Không thường xuyên">Không thường xuyên</option>
+                                            <option value="không nhu cầu">không nhu cầu</option>
                                         </select>
                                     </div>
                                 </th>
@@ -596,10 +596,10 @@
 
         const classificationColors = {
             "Khách mới": "#3b82f6",      // Xanh dương
-            "Khách đang mua": "#FFA500", // Cam
+            "Thường xuyên": "#FFA500", // Cam
             "Chưa liên hệ được": "#10b981",  // Xanh lá
-            "Chưa phản hồi": "#eab308",       // Vàng
-            "Không phản hồi": "#ef4444"       // Đỏ
+            "Không thường xuyên": "#eab308",       // Vàng
+            "không nhu cầu": "#ef4444"       // Đỏ
         };
 
         function getFormData() {
