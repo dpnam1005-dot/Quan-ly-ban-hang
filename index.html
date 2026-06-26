@@ -125,33 +125,12 @@
             width: 100%;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-secondary {
-            background-color: #f1f5f9;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: #e2e8f0;
-        }
-
-        .btn-danger {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: #e2e8f0; }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
 
         /* Styles cho nút xuất file */
         .btn-export-excel { background-color: #10b981; color: white; }
@@ -160,6 +139,9 @@
         .btn-import-excel:hover { background-color: #2563eb; }
         .btn-export-pdf { background-color: #f59e0b; color: white; }
         .btn-export-pdf:hover { background-color: #d97706; }
+        
+        .btn-report-month { background-color: #ec4899; color: white; }
+        .btn-report-month:hover { background-color: #db2777; }
 
         .btn-sm {
             padding: 6px 10px;
@@ -392,10 +374,15 @@
                     <h2>Bảng Xếp hạng Doanh số</h2>
                     <div class="header-actions">
                         <input type="text" id="searchInput" class="search-box" placeholder="Tìm kiếm khách hàng...">
+                        
                         <input type="file" id="fileInputExcel" accept=".xlsx, .xls, .csv" style="display: none;">
                         <button type="button" id="btnImportExcel" class="btn btn-import-excel btn-sm">Nhập Excel</button>
                         <button type="button" id="btnExportExcel" class="btn btn-export-excel btn-sm">Xuất Excel</button>
                         <button type="button" id="btnExportPDF" class="btn btn-export-pdf btn-sm">Xuất PDF</button>
+                        
+                        <!-- Nút Báo Cáo Doanh Thu Mới -->
+                        <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
+                        <button type="button" id="btnReportMonth" class="btn btn-report-month btn-sm">Báo cáo Tháng</button>
                     </div>
                 </div>
 
@@ -436,7 +423,39 @@
         </div>
     </div>
 
-    <!-- Modal xác nhận trùng mã KH -->
+    <!-- Modals -->
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal-content" style="width: 800px; max-width: 95%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--primary-color); margin: 0;">Báo Cáo Doanh Thu</h3>
+                <select id="reportMonthSelect" style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 14px; cursor: pointer; font-weight: bold; color: var(--text-main);">
+                </select>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 4px;">
+                <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+                    <thead style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th style="background: #f8fafc; padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">Thời gian</th>
+                            <th style="background: #f8fafc; padding: 10px; border-bottom: 1px solid #e2e8f0;">Mã KH</th>
+                            <th style="background: #f8fafc; padding: 10px; border-bottom: 1px solid #e2e8f0;">Tên Công ty</th>
+                            <th style="background: #f8fafc; padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">Doanh thu tăng</th>
+                            <th style="background: #f8fafc; padding: 10px; border-bottom: 1px solid #e2e8f0;">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                <strong>Tổng Doanh Thu:</strong>
+                <strong id="reportTotalRevenue" style="color: #10b981; font-size: 18px;">0 VNĐ</strong>
+            </div>
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button type="button" id="btnCloseReport" class="btn btn-secondary">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <div id="duplicateModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color: #d97706; margin-bottom: 10px;">Trùng Mã Khách Hàng</h3>
@@ -448,7 +467,6 @@
         </div>
     </div>
 
-    <!-- Modal xác nhận xóa KH -->
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color: #ef4444; margin-bottom: 10px;">Xác nhận xóa</h3>
@@ -460,7 +478,6 @@
         </div>
     </div>
 
-    <!-- Modal cảnh báo trùng lặp thông tin khác -->
     <div id="warningModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="color: #f59e0b; margin-bottom: 10px;">Cảnh báo trùng lặp</h3>
@@ -472,7 +489,6 @@
         </div>
     </div>
 
-    <!-- Modal thông báo kết quả cập nhật Doanh số -->
     <div id="notificationModal" class="modal-overlay">
         <div class="modal-content" style="text-align: center;">
             <h3 id="notificationTitle" style="margin-bottom: 15px;">Thông báo</h3>
@@ -487,6 +503,17 @@
         let customers = [];
         try {
             customers = JSON.parse(localStorage.getItem('customers_data')) || [];
+            // Migration: Khởi tạo history cho dữ liệu cũ chưa có (tránh lỗi null khi tính doanh thu theo kỳ)
+            customers = customers.map(c => {
+                if (!c.history) {
+                    c.history = [{
+                        date: new Date().toISOString(),
+                        amount: c.sales || 0,
+                        note: 'Khởi tạo dữ liệu gốc'
+                    }];
+                }
+                return c;
+            });
         } catch(e) {
             customers = [];
         }
@@ -508,7 +535,7 @@
         let currentPage = 1;
         const itemsPerPage = 10;
 
-        // Tự động gom toàn bộ DOM elements lên trên cùng để tránh lỗi khởi tạo (ReferenceError)
+        // Khởi tạo các DOM elements
         const form = document.getElementById('customerForm');
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
@@ -556,6 +583,8 @@
         const btnImportExcel = document.getElementById('btnImportExcel');
         const btnExportExcel = document.getElementById('btnExportExcel');
         const btnExportPDF = document.getElementById('btnExportPDF');
+        
+        const btnReportMonth = document.getElementById('btnReportMonth');
 
         let customerToDelete = null;
 
@@ -595,11 +624,11 @@
         }
 
         const classificationColors = {
-            "Khách mới": "#3b82f6",      // Xanh dương
-            "Thường xuyên": "#D4AF37", // Vàng
-            "Không thường xuyên": "#FC5A8D",       // Hồng
-            "Chưa liên hệ được": "#10b981",  // Xanh lá
-            "Không nhu cầu": "#ef4444"       // Đỏ
+            "Khách mới": "#3b82f6",
+            "Thường xuyên": "#D4AF37",
+            "Không thường xuyên": "#FC5A8D",
+            "Chưa liên hệ được": "#10b981",
+            "Không nhu cầu": "#ef4444"
         };
 
         function getFormData() {
@@ -652,7 +681,7 @@
                 addSalesInput.style.borderColor = 'var(--border-color)';
                 addSalesInput.style.color = 'var(--text-main)';
             } else {
-                formTitle.innerText = "Thông hiện Khách hàng";
+                formTitle.innerText = "Thông tin Khách hàng";
                 btnSubmit.style.display = 'block';
                 editActions.style.display = 'none';
                 idInput.readOnly = false;
@@ -761,7 +790,15 @@
         function proceedWithSave(data, isUpdating) {
             if (isUpdating) {
                 const index = customers.findIndex(c => String(c.customerId || '').toLowerCase() === String(data.customerId || '').toLowerCase());
-                if (index !== -1) { customers[index] = data; saveData(); toggleEditMode(false); renderTable(); }
+                if (index !== -1) { 
+                    // Giữ nguyên history cũ
+                    data.history = customers[index].history || [];
+                    // Log lịch sử được xử lý ở btnUpdate
+                    customers[index] = data; 
+                    saveData(); 
+                    toggleEditMode(false); 
+                    renderTable(); 
+                }
             } else {
                 const exists = customers.find(c => String(c.customerId || '').toLowerCase() === String(data.customerId || '').toLowerCase());
                 if (exists) {
@@ -769,7 +806,16 @@
                     modalMessage.innerHTML = `Mã khách hàng <strong>"${data.customerId}"</strong> đã tồn tại. Bạn có muốn cập nhật thông tin và doanh số không?`;
                     modal.style.display = 'flex';
                 } else {
-                    customers.push(data); saveData(); toggleEditMode(false); renderTable();
+                    // Tạo mới: khởi tạo history
+                    data.history = [{
+                        date: new Date().toISOString(),
+                        amount: data.sales,
+                        note: 'Tạo mới'
+                    }];
+                    customers.push(data); 
+                    saveData(); 
+                    toggleEditMode(false); 
+                    renderTable();
                 }
             }
 
@@ -794,7 +840,6 @@
 
         form.addEventListener('submit', function(e) { 
             e.preventDefault(); 
-            // Cập nhật thông minh: Nếu đang sửa KH mà người dùng ấn 'Enter' -> tự hiểu là thao tác Cập Nhật chứ không phải Thêm Mới.
             if (isEditing) {
                 btnUpdate.click();
             } else {
@@ -806,21 +851,33 @@
             const data = getFormData();
             const addedSalesStr = addSalesInput.value.replace(/[,.]/g, '');
             
+            // Xử lý lưu lịch sử
+            const existingCustIndex = customers.findIndex(c => String(c.customerId).toLowerCase() === String(data.customerId).toLowerCase());
+            if(existingCustIndex !== -1) {
+                data.history = customers[existingCustIndex].history || [];
+            } else {
+                data.history = [];
+            }
+
             if (addedSalesStr !== '-' && addedSalesStr !== '') {
                 const addedSales = Number(addedSalesStr) || 0;
-                if (addedSales > 0) {
+                if (addedSales > 0 || addedSales < 0) {
                     data.sales += addedSales; 
+                    
+                    // Thêm vào history
+                    data.history.push({
+                        date: new Date().toISOString(),
+                        amount: addedSales,
+                        note: 'Cập nhật (+/-)'
+                    });
+
+                    let titleColor = addedSales > 0 ? '#10b981' : '#ef4444';
+                    let actionText = addedSales > 0 ? `Tăng thêm ${formatCurrency(addedSales)}` : `Giảm đi ${formatCurrency(Math.abs(addedSales))}`;
+
                     pendingNotification = {
                         title: 'Thành công!',
-                        titleColor: '#10b981',
-                        message: `Doanh số gốc của khách hàng <strong>${data.customerId}</strong> đã được <br><strong style="color: #10b981; font-size: 18px;">Tăng thêm ${formatCurrency(addedSales)}</strong>`
-                    };
-                } else if (addedSales < 0) {
-                    data.sales += addedSales; 
-                    pendingNotification = {
-                        title: 'Thành công!',
-                        titleColor: '#ef4444',
-                        message: `Doanh số gốc của khách hàng <strong>${data.customerId}</strong> đã bị <br><strong style="color: #ef4444; font-size: 18px;">Giảm đi ${formatCurrency(Math.abs(addedSales))}</strong>`
+                        titleColor: titleColor,
+                        message: `Doanh số gốc của khách hàng <strong>${data.customerId}</strong> đã được <br><strong style="color: ${titleColor}; font-size: 18px;">${actionText}</strong>`
                     };
                 }
             }
@@ -836,7 +893,6 @@
         btnCancelDelete.addEventListener('click', function() { deleteModal.style.display = 'none'; });
         btnCancelEdit.addEventListener('click', function() { toggleEditMode(false); });
         
-        // Sự kiện lọc
         searchInput.addEventListener('input', () => { currentPage = 1; renderTable(); });
         if (filterClassification) {
             filterClassification.addEventListener('change', () => { currentPage = 1; renderTable(); });
@@ -844,7 +900,11 @@
 
         document.getElementById('btnConfirmModal').addEventListener('click', function() {
             const index = customers.findIndex(c => String(c.customerId).toLowerCase() === String(pendingCustomerData.customerId).toLowerCase());
-            if (index !== -1) { customers[index] = pendingCustomerData; saveData(); }
+            if (index !== -1) { 
+                pendingCustomerData.history = customers[index].history || [];
+                customers[index] = pendingCustomerData; 
+                saveData(); 
+            }
             modal.style.display = 'none'; toggleEditMode(false); renderTable();
         });
         document.getElementById('btnCancelModal').addEventListener('click', () => { modal.style.display = 'none'; });
@@ -860,9 +920,7 @@
                     (c.contactName && String(c.contactName).toLowerCase().includes(query)) ||
                     (c.phone && String(c.phone).includes(query)) ||
                     (c.classification && String(c.classification).toLowerCase().includes(query));
-                
                 const matchClass = filterClassVal === '' || c.classification === filterClassVal;
-                
                 return matchSearch && matchClass;
             });
             filtered.sort((a, b) => b.sales - a.sales);
@@ -872,7 +930,6 @@
         btnExportExcel.addEventListener('click', function() {
             const data = getFilteredAndSortedData();
             if (data.length === 0) return;
-
             const exportData = data.map((c, index) => ({
                 "STT": index + 1,
                 "Mã KH": c.customerId || "",
@@ -894,9 +951,7 @@
         btnExportPDF.addEventListener('click', function() {
             const data = getFilteredAndSortedData();
             if (data.length === 0) return;
-
             const tableBody = [];
-            
             tableBody.push([
                 { text: 'STT', style: 'tableHeader', alignment: 'center' },
                 { text: 'Mã KH', style: 'tableHeader' },
@@ -907,11 +962,9 @@
                 { text: 'Doanh số (VNĐ)', style: 'tableHeader', alignment: 'right' },
                 { text: 'Ghi chú', style: 'tableHeader' }
             ]);
-
             data.forEach((c, index) => {
                 let salesColor = c.sales >= 0 ? '#10b981' : '#ef4444';
                 let maKhColor = (c.classification && classificationColors[c.classification]) ? classificationColors[c.classification] : '#2563eb';
-                
                 tableBody.push([
                     { text: (index + 1).toString(), alignment: 'center' },
                     { text: c.customerId || '-', color: maKhColor, bold: true },
@@ -936,42 +989,148 @@
                             body: tableBody
                         },
                         layout: {
-                            hLineWidth: function (i, node) { return 1; },
-                            vLineWidth: function (i, node) { return 1; },
-                            hLineColor: function (i, node) { return '#e2e8f0'; },
-                            vLineColor: function (i, node) { return '#e2e8f0'; },
-                            paddingLeft: function(i, node) { return 6; },
-                            paddingRight: function(i, node) { return 6; },
-                            paddingTop: function(i, node) { return 8; },
-                            paddingBottom: function(i, node) { return 8; }
+                            hLineWidth: function (i) { return 1; },
+                            vLineWidth: function (i) { return 1; },
+                            hLineColor: function (i) { return '#e2e8f0'; },
+                            vLineColor: function (i) { return '#e2e8f0'; },
+                            paddingLeft: function(i) { return 6; },
+                            paddingRight: function(i) { return 6; },
+                            paddingTop: function(i) { return 8; },
+                            paddingBottom: function(i) { return 8; }
                         }
                     }
                 ],
                 styles: {
-                    header: {
-                        fontSize: 16,
-                        bold: true,
-                        alignment: 'center',
-                        margin: [0, 0, 0, 15],
-                        color: '#2563eb'
-                    },
-                    tableHeader: {
-                        bold: true,
-                        fontSize: 11,
-                        color: '#475569',
-                        fillColor: '#f8fafc'
-                    }
+                    header: { fontSize: 16, bold: true, alignment: 'center', margin: [0, 0, 0, 15], color: '#2563eb' },
+                    tableHeader: { bold: true, fontSize: 11, color: '#475569', fillColor: '#f8fafc' }
                 },
-                defaultStyle: {
-                    fontSize: 10
-                }
+                defaultStyle: { fontSize: 10 }
             };
-
             pdfMake.createPdf(docDefinition).download('Bang_Xep_Hang_Doanh_So.pdf');
         });
 
+        // ------------------ LOGIC BÁO CÁO THEO THÁNG ------------------
+        const reportModal = document.getElementById('reportModal');
+        const reportTableBody = document.getElementById('reportTableBody');
+        const reportTotalRevenue = document.getElementById('reportTotalRevenue');
+        const btnCloseReport = document.getElementById('btnCloseReport');
+        const reportMonthSelect = document.getElementById('reportMonthSelect');
+
+        btnCloseReport.addEventListener('click', () => { reportModal.style.display = 'none'; });
+
+        function populateMonthSelect() {
+            reportMonthSelect.innerHTML = '';
+            const now = new Date();
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const month = d.getMonth() + 1;
+                const year = d.getFullYear();
+                const option = document.createElement('option');
+                option.value = `${year}-${month}`;
+                option.text = i === 0 ? `Tháng ${month}/${year} (Tháng này)` : `Tháng ${month}/${year}`;
+                reportMonthSelect.appendChild(option);
+            }
+        }
+
+        function getDatesForReport(year, monthIndex) {
+            let start = new Date(year, monthIndex, 1);
+            start.setHours(0,0,0,0);
+            let end = new Date(year, monthIndex + 1, 0);
+            end.setHours(23, 59, 59, 999);
+            
+            return { start, end };
+        }
+
+        function showRevenueReport() {
+            const selectedValue = reportMonthSelect.value;
+            let year, monthIndex, monthLabel;
+            
+            if (selectedValue) {
+                const parts = selectedValue.split('-');
+                year = parseInt(parts[0], 10);
+                monthIndex = parseInt(parts[1], 10) - 1;
+                monthLabel = `${monthIndex + 1}/${year}`;
+            } else {
+                const now = new Date();
+                year = now.getFullYear();
+                monthIndex = now.getMonth();
+                monthLabel = `${monthIndex + 1}/${year}`;
+            }
+
+            const { start, end } = getDatesForReport(year, monthIndex);
+            let totalRevenuePeriod = 0;
+
+            let transactionsInPeriod = [];
+
+            // Thu thập toàn bộ lịch sử giao dịch nằm trong khoảng thời gian báo cáo
+            customers.forEach(c => {
+                if (c.history && c.history.length > 0) {
+                    c.history.forEach(tx => {
+                        const txDate = new Date(tx.date);
+                        // Chỉ lấy những giao dịch có biến động doanh số
+                        if (txDate >= start && txDate <= end && tx.amount !== 0) {
+                            transactionsInPeriod.push({
+                                customer: c,
+                                tx: tx,
+                                date: txDate
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Sắp xếp giao dịch theo thời gian mới nhất lên đầu
+            transactionsInPeriod.sort((a, b) => b.date - a.date);
+
+            // Đổ dữ liệu ra Modal HTML
+            reportTableBody.innerHTML = '';
+            
+            if (transactionsInPeriod.length === 0) {
+                reportTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: #64748b;">Không có giao dịch/biến động doanh thu nào phát sinh trong <strong>Tháng ${monthLabel}</strong>.</td></tr>`;
+                reportTotalRevenue.innerText = "0 đ";
+                reportTotalRevenue.style.color = "#64748b";
+            } else {
+                transactionsInPeriod.forEach(item => {
+                    const c = item.customer;
+                    const tx = item.tx;
+                    
+                    // Định dạng thời gian hiển thị (VD: 26/06/2026 14:30)
+                    const formattedTime = item.date.toLocaleString('vi-VN', { 
+                        day: '2-digit', month: '2-digit', year: 'numeric', 
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    totalRevenuePeriod += tx.amount;
+                    let amountColor = tx.amount > 0 ? '#10b981' : '#ef4444';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; text-align: center;">${formattedTime}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: var(--primary-color);">${c.customerId || '-'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${c.companyName || '-'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: ${amountColor}; font-weight: bold;">${formatCurrency(tx.amount)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px;">${tx.note || '-'}</td>
+                    `;
+                    reportTableBody.appendChild(tr);
+                });
+                reportTotalRevenue.innerText = formatCurrency(totalRevenuePeriod);
+                reportTotalRevenue.style.color = totalRevenuePeriod >= 0 ? "#10b981" : "#ef4444";
+            }
+
+            // Hiện popup
+            reportModal.style.display = 'flex';
+        }
+
+        reportMonthSelect.addEventListener('change', showRevenueReport);
+
+        btnReportMonth.addEventListener('click', () => {
+            populateMonthSelect();
+            showRevenueReport();
+        });
+        // ---------------------------------------------------------------------
+
         btnImportExcel.addEventListener('click', function() {
-            fileInputExcel.value = null; // Reset lại input để chọn cùng 1 file nhiều lần vẫn nhận
+            fileInputExcel.value = null; 
             fileInputExcel.click();
         });
 
@@ -986,16 +1145,12 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Thêm defval: "" để tránh lỗi Undefined nếu ô trống
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" }); 
 
                     let importedCount = 0;
                     let updatedCount = 0;
 
                     jsonData.forEach(row => {
-                        // Chuẩn hóa toàn bộ key của Object về chữ thường và xóa khoảng trắng 
-                        // -> Tránh lỗi do người dùng gõ sai tên cột (VD: " Mã KH ", "MÃ KH")
                         const normRow = {};
                         for (let k in row) {
                             if (row.hasOwnProperty(k)) {
@@ -1003,9 +1158,8 @@
                             }
                         }
 
-                        // Tìm linh hoạt các tên cột tương đương
                         const custId = String(normRow["mã kh"] || normRow["mã khách hàng"] || normRow["customerid"] || normRow["mã"] || "").trim();
-                        if (!custId) return; // Nếu hoàn toàn không có ID, bỏ qua dòng đó
+                        if (!custId) return;
 
                         let salesVal = normRow["doanh số kh (vnđ)"] || normRow["doanh số (vnđ)"] || normRow["doanh số"] || normRow["sales"] || 0;
                         if (typeof salesVal === 'string') {
@@ -1025,15 +1179,29 @@
 
                         const existingIndex = customers.findIndex(c => String(c.customerId).toLowerCase() === custId.toLowerCase());
                         if (existingIndex !== -1) {
+                            // Ghi lại lịch sử nếu doanh thu có thay đổi từ excel
+                            const diff = newCustomer.sales - (customers[existingIndex].sales || 0);
+                            newCustomer.history = customers[existingIndex].history || [];
+                            if (diff !== 0) {
+                                newCustomer.history.push({
+                                    date: new Date().toISOString(),
+                                    amount: diff,
+                                    note: 'Cập nhật qua Excel'
+                                });
+                            }
                             customers[existingIndex] = newCustomer;
                             updatedCount++;
                         } else {
+                            newCustomer.history = [{
+                                date: new Date().toISOString(),
+                                amount: newCustomer.sales,
+                                note: 'Thêm mới qua Excel'
+                            }];
                             customers.push(newCustomer);
                             importedCount++;
                         }
                     });
 
-                    // Kiểm tra xem có dòng nào được lấy ra không
                     if (importedCount === 0 && updatedCount === 0) {
                         notificationTitle.innerText = "Lỗi Cấu Trúc File";
                         notificationTitle.style.color = "#ef4444";
@@ -1043,13 +1211,11 @@
                         saveData();
                         currentPage = 1;
                         renderTable();
-
                         notificationTitle.innerText = "Nhập Excel Thành Công!";
                         notificationTitle.style.color = "#10b981";
                         notificationMessage.innerHTML = `Đã thêm mới: <strong>${importedCount}</strong> khách hàng.<br>Đã cập nhật: <strong>${updatedCount}</strong> khách hàng (do trùng mã).`;
                         notificationModal.style.display = 'flex';
                     }
-
                 } catch (error) {
                     console.error("Lỗi đọc file Excel:", error);
                     notificationTitle.innerText = "Lỗi Nhập File";
@@ -1061,7 +1227,7 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // Khởi động giao diện bảng lần đầu
+        // Khởi động
         renderTable();
     </script>
 </body>
